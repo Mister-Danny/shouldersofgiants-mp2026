@@ -1,0 +1,2277 @@
+/* ================================================================
+   style.css — Shoulders of Giants
+   Visual style: 1990s SNES / arcade aesthetic
+   Inspired by: Earthbound, Final Fantasy VI, Street Fighter II
+   Font: CT Galbite (pixel/bitmap feel) loaded from fonts/
+   ================================================================ */
+
+
+/* ── Pixel font ─────────────────────────────────────────────────── */
+@font-face {
+  font-family: 'CTGalbite';
+  src: url('../fonts/CT Galbite-Regular.ttf') format('truetype');
+  font-weight: normal;
+  font-style: normal;
+  font-display: swap;
+}
+
+
+/* ── CSS Custom Properties ──────────────────────────────────────── */
+:root {
+  /* Backgrounds */
+  --bg-base:        #0a001e;   /* deep purple-black — title/main bg  */
+  --bg-surface:     #0e0030;   /* slightly lighter — panels          */
+  --bg-dialog:      #050015;   /* darkest — SNES dialogue interior   */
+  --bg-header:      #07001a;   /* header bar                         */
+  --bg-btn:         #12004a;   /* button resting state               */
+  --bg-btn-hover:   #1e0878;   /* button hover                       */
+
+  /* SNES border system */
+  --border-bright:  #8898ff;   /* inner border — periwinkle          */
+  --border-mid:     #3848c0;   /* outer border ring                  */
+  --border-dark:    #000000;   /* gap layer                          */
+
+  /* Accent palette */
+  --snes-yellow:    #f8d000;   /* selection / highlight              */
+  --snes-cyan:      #40e0e0;   /* secondary accent                   */
+  --snes-green:     #48d848;   /* positive / "in deck"               */
+  --snes-red:       #f04030;   /* danger / remove                    */
+  --snes-white:     #ffffff;
+
+  /* Card type colors — vivid SNES-saturated */
+  --c-political:    #c060ff;
+  --c-religious:    #ffa820;
+  --c-military:     #ff4840;
+  --c-cultural:     #30d898;
+  --c-exploration:  #30a8ff;
+
+  /* Text */
+  --text-white:     #ffffff;
+  --text-dim:       #8888b8;
+  --text-muted:     #444468;
+
+  /* Font shorthand */
+  --font:           'CTGalbite', 'Courier New', monospace;
+
+  /* Layout */
+  --header-h:       58px;
+  --gap:            14px;
+}
+
+
+/* ── Reset & base ───────────────────────────────────────────────── */
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html, body {
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  background: var(--bg-base);
+  color: var(--text-white);
+  font-family: var(--font);
+  font-size: 14px;
+  line-height: 1.5;
+  /* Sharpen pixel font rendering */
+  -webkit-font-smoothing: none;
+  font-smooth: never;
+}
+
+button { font-family: var(--font); cursor: pointer; }
+img    { display: block; }
+
+
+/* ── Screen management ──────────────────────────────────────────── */
+.screen           { position: absolute; inset: 0; display: none; }
+.screen.active    { display: block; }
+
+.placeholder-msg {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  font-family: var(--font);
+  font-size: 18px;
+  color: var(--snes-yellow);
+  text-shadow: 2px 2px 0 #000;
+}
+
+
+/* ── Shared SNES button ─────────────────────────────────────────── */
+/*
+  Three-layer visual stack (bottom → top):
+    outer dark shadow → colored raised edge → flat face → text
+  Press: element drops 4px to "consume" the raised edge.
+*/
+.btn-snes {
+  display: inline-block;
+  background: var(--bg-btn);
+  border: 2px solid var(--border-bright);
+  color: var(--text-white);
+  font-family: var(--font);
+  font-size: 14px;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  padding: 10px 24px;
+  cursor: pointer;
+  /* Raised edge: 4px colored drop + 1px black beneath */
+  box-shadow: 0 4px 0 var(--border-mid), 0 5px 0 #000;
+  transition: background 0.08s, border-color 0.08s, color 0.08s,
+              transform 0.06s, box-shadow 0.06s;
+  outline: none;
+}
+
+.btn-snes:hover {
+  background: var(--bg-btn-hover);
+  border-color: var(--snes-yellow);
+  color: var(--snes-yellow);
+}
+
+.btn-snes:active {
+  transform: translateY(4px);
+  box-shadow: 0 0 0 var(--border-mid), 0 1px 0 #000;
+}
+
+/* Semantic colour overrides */
+.btn-snes.btn-snes-add {
+  border-color: var(--snes-yellow);
+  color: var(--snes-yellow);
+}
+.btn-snes.btn-snes-add:hover {
+  background: #1e1000;
+}
+
+.btn-snes.btn-snes-remove {
+  border-color: var(--snes-red);
+  color: var(--snes-red);
+}
+.btn-snes.btn-snes-remove:hover {
+  background: #200000;
+  border-color: var(--snes-red);
+  color: var(--snes-red);
+}
+
+.btn-snes.btn-snes-close {
+  border-color: var(--text-dim);
+  color: var(--text-dim);
+}
+.btn-snes.btn-snes-close:hover {
+  border-color: var(--text-white);
+  color: var(--text-white);
+}
+
+.btn-snes:disabled,
+.btn-snes.btn-snes-disabled {
+  background: #0a0020;
+  border-color: #333358;
+  color: var(--text-muted);
+  box-shadow: 0 2px 0 #111, 0 3px 0 #000;
+  cursor: not-allowed;
+}
+
+/* Larger variant used on the Home screen */
+.btn-primary {
+  font-size: 18px;
+  padding: 13px 52px;
+  letter-spacing: 0.10em;
+}
+
+
+/* ══════════════════════════════════════════════════════════════════
+   HOME SCREEN — Wood-textured welcome / "Are you ready?" screen
+══════════════════════════════════════════════════════════════════ */
+
+#screen-home.active {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: absolute;
+  top: 0; left: 0; right: 0; bottom: 0;
+  width: 100%;
+  height: 100%;
+}
+
+/* Full-screen wood texture layer behind all content */
+#screen-home::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0; bottom: 0;
+  /* Fine horizontal grain lines + plank bands + warm brown base */
+  background:
+    repeating-linear-gradient(
+      0deg,
+      transparent 0px, transparent 7px,
+      rgba(0,0,0,0.07) 7px, rgba(0,0,0,0.07) 8px
+    ),
+    repeating-linear-gradient(
+      0deg,
+      transparent             0px,  transparent             38px,
+      rgba(255,255,255,0.045) 38px, rgba(255,255,255,0.045) 42px,
+      transparent             42px, transparent             78px,
+      rgba(0,0,0,0.07)        78px, rgba(0,0,0,0.07)        82px
+    ),
+    linear-gradient(180deg,
+      #6e3e1a 0%,
+      #885028 18%,
+      #7a4822 36%,
+      #8e5a2e 54%,
+      #7a4822 72%,
+      #885028 90%,
+      #6e3e1a 100%
+    );
+  pointer-events: none;
+}
+
+.home-content {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 40px;
+  width: 100%;
+  height: 100%;
+}
+
+/* "Player 1" — large chunky pixel text with black outline */
+.home-player-label {
+  font-family: var(--font);
+  font-size: 110px;
+  color: #ffffff;
+  line-height: 1;
+  text-align: center;
+  text-shadow:
+    3px  3px 0 #000,
+   -3px -3px 0 #000,
+    3px -3px 0 #000,
+   -3px  3px 0 #000,
+    5px  5px 0 rgba(0,0,0,0.5);
+}
+
+/* "Are you ready to make history?" */
+.home-question {
+  font-family: var(--font);
+  font-size: 34px;
+  color: #ffffff;
+  line-height: 1.45;
+  text-align: center;
+  text-shadow:
+    2px  2px 0 #000,
+   -1px -1px 0 #000,
+    2px -1px 0 #000,
+   -1px  2px 0 #000;
+}
+
+.home-nav {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 18px;
+}
+
+/* "I'm Ready" — warm gold SNES button */
+.btn-home-ready {
+  font-size: 38px;
+  padding: 14px 64px;
+  background: #c49a28;
+  border: 3px solid #000;
+  color: #fff;
+  box-shadow: 0 5px 0 #7a5c00, 0 6px 0 #000;
+  letter-spacing: 0.06em;
+}
+.btn-home-ready:hover {
+  background: #d4aa38;
+  border-color: #000;
+  color: #fff;
+}
+.btn-home-ready:active {
+  transform: translateY(5px);
+  box-shadow: 0 0 0 #7a5c00, 0 1px 0 #000;
+}
+
+/* "I'm Ready to Learn How" — subtler secondary button */
+.btn-home-learn {
+  font-size: 20px;
+  padding: 10px 32px;
+  color: var(--text-dim);
+  border-color: var(--text-muted);
+}
+.btn-home-learn:hover {
+  color: var(--text-white);
+  border-color: var(--text-dim);
+  background: var(--bg-btn-hover);
+}
+
+/* ── Video intro screen ────────────────────────────────────────── */
+
+#screen-video.active {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #000;
+}
+
+#intro-video {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  background: #000;
+}
+
+/* ── Radial wipe transition overlay ──────────────────────────── */
+
+#radial-wipe {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  background: #000;
+  clip-path: circle(0% at 50% 50%);
+  pointer-events: none;
+}
+
+#radial-wipe.animating {
+  animation: radial-wipe-expand 0.65s ease-in forwards;
+  pointer-events: all;
+}
+
+@keyframes radial-wipe-expand {
+  from { clip-path: circle(0%   at 50% 50%); }
+  to   { clip-path: circle(150% at 50% 50%); }
+}
+
+
+/* ══════════════════════════════════════════════════════════════════
+   DECK BUILDER SCREEN
+══════════════════════════════════════════════════════════════════ */
+
+#screen-deckbuilder.active {
+  display: flex;
+  flex-direction: column;
+  background: var(--bg-base);
+  /* Faint scanlines on the whole screen */
+  background-image: repeating-linear-gradient(
+    0deg,
+    rgba(0,0,0,0) 0px, rgba(0,0,0,0) 3px,
+    rgba(0,0,0,0.08) 3px, rgba(0,0,0,0.08) 4px
+  );
+}
+
+
+/* ── Header bar ─────────────────────────────────────────────────── */
+.db-header {
+  flex-shrink: 0;
+  height: var(--header-h);
+  display: flex;
+  align-items: center;
+  padding: 0 20px;
+  gap: 14px;
+  background: var(--bg-header);
+  /* Bottom border as a bright SNES line */
+  border-bottom: 2px solid var(--border-bright);
+  box-shadow: 0 2px 0 var(--border-dark), 0 4px 0 var(--border-mid);
+  position: relative;
+  z-index: 10;
+}
+
+.db-header-left {
+  display:     flex;
+  align-items: center;
+  gap:         8px;
+  flex-shrink: 0;
+}
+
+.btn-back {
+  flex-shrink: 0;
+  padding: 7px 14px;
+  font-size: 12px;
+}
+
+.btn-watch-intro {
+  flex-shrink:     0;
+  padding:         5px 10px;
+  font-family:     'CTGalbite', monospace;
+  font-size:       10px;
+  color:           var(--text-dim);
+  background:      transparent;
+  border:          1px solid rgba(136, 136, 184, 0.30);
+  border-radius:   3px;
+  cursor:          pointer;
+  letter-spacing:  0.05em;
+  transition:      color 0.15s, border-color 0.15s;
+}
+
+.btn-watch-intro:hover {
+  color:        var(--snes-cyan);
+  border-color: rgba(64, 224, 224, 0.55);
+}
+
+.db-title {
+  flex: 1;
+  font-family: var(--font);
+  font-size: 18px;
+  color: var(--text-white);
+  text-transform: uppercase;
+  letter-spacing: 0.10em;
+  text-shadow: 2px 2px 0 #000;
+}
+
+.db-controls {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  flex-shrink: 0;
+}
+
+.db-counter {
+  font-family: var(--font);
+  font-size: 22px;
+  color: var(--snes-yellow);
+  min-width: 72px;
+  text-align: right;
+  text-shadow: 1px 1px 0 #000;
+  transition: color 0.15s;
+}
+
+.db-counter.complete {
+  color: var(--snes-green);
+  text-shadow: 0 0 8px var(--snes-green), 1px 1px 0 #000;
+}
+
+.db-counter.flash {
+  animation: counter-flash 0.42s steps(4, end);
+}
+
+@keyframes counter-flash {
+  0%, 100% { color: var(--snes-yellow); }
+  25%, 75%  { color: var(--snes-red);   }
+}
+
+/* Save button: larger SNES-style */
+.btn-save {
+  padding: 9px 22px;
+  font-size: 13px;
+  border-color: var(--snes-yellow);
+  color: var(--snes-yellow);
+}
+
+.btn-save:not(:disabled):hover {
+  background: #1e1000;
+  border-color: var(--snes-yellow);
+  color: var(--snes-yellow);
+}
+
+.btn-save:disabled {
+  background: #0a0020;
+  border-color: #333358;
+  color: var(--text-muted);
+  box-shadow: 0 2px 0 #111, 0 3px 0 #000;
+  cursor: not-allowed;
+}
+
+
+/* Deselect All button — dim red, sits left of the counter */
+.btn-deselect-all {
+  padding: 7px 14px;
+  font-size: 11px;
+  letter-spacing: 0.07em;
+  border-color: var(--snes-red);
+  color: var(--snes-red);
+}
+.btn-deselect-all:hover {
+  background: #200000;
+  border-color: var(--snes-red);
+  color: var(--snes-red);
+}
+
+
+/* ── Scrollable card area ───────────────────────────────────────── */
+.db-main {
+  flex: 1;
+  overflow-y: auto;
+  padding: 22px 24px 48px;
+}
+
+.db-main::-webkit-scrollbar       { width: 8px; }
+.db-main::-webkit-scrollbar-track { background: #000010; }
+.db-main::-webkit-scrollbar-thumb {
+  background: var(--border-mid);
+  border: 1px solid var(--border-dark);
+}
+.db-main::-webkit-scrollbar-thumb:hover { background: var(--border-bright); }
+
+
+/* ── Type group section ─────────────────────────────────────────── */
+.db-type-group { margin-bottom: 26px; }
+
+.db-type-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 12px;
+  padding: 5px 10px;
+  background: #080022;
+  border-left: 4px solid;          /* color set per type below */
+  border-bottom: 1px solid #1a1a40;
+}
+
+/* Colour the left-border and label per type */
+.type-political  .db-type-header { border-color: var(--c-political);   }
+.type-religious  .db-type-header { border-color: var(--c-religious);   }
+.type-military   .db-type-header { border-color: var(--c-military);    }
+.type-cultural   .db-type-header { border-color: var(--c-cultural);    }
+.type-exploration .db-type-header{ border-color: var(--c-exploration); }
+
+.db-type-pip {
+  width: 8px;
+  height: 8px;
+  flex-shrink: 0;
+  /* Pixel-square instead of circle — more SNES */
+  border-radius: 0;
+}
+
+.db-type-label {
+  font-family: var(--font);
+  font-size: 13px;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+}
+
+.db-type-count {
+  font-size: 12px;
+  color: var(--text-muted);
+}
+
+.type-political  .db-type-pip, .type-political  .db-type-label { color: var(--c-political);   background: var(--c-political);   }
+.type-religious  .db-type-pip, .type-religious  .db-type-label { color: var(--c-religious);   background: var(--c-religious);   }
+.type-military   .db-type-pip, .type-military   .db-type-label { color: var(--c-military);    background: var(--c-military);    }
+.type-cultural   .db-type-pip, .type-cultural   .db-type-label { color: var(--c-cultural);    background: var(--c-cultural);    }
+.type-exploration .db-type-pip, .type-exploration .db-type-label{ color: var(--c-exploration); background: var(--c-exploration); }
+
+/* Label is text, not background — reset the background from above */
+.db-type-label { background: transparent; }
+
+/* Five-column card grid */
+.db-card-row {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: var(--gap);
+}
+
+
+/* ══════════════════════════════════════════════════════════════════
+   DECK BUILDER — CARD TILE
+   Full-bleed PNG, no frame. CC top-left, IP top-right.
+══════════════════════════════════════════════════════════════════ */
+
+.db-card {
+  position: relative;
+  z-index: 0;          /* creates stacking context — keeps overlays inside card */
+  aspect-ratio: 2 / 3;
+  overflow: hidden;
+  cursor: pointer;
+  user-select: none;
+  /* 2px gap border so selecting doesn't shift layout */
+  border: 2px solid transparent;
+  /* Pixel-sharp corners */
+  border-radius: 0;
+  transition: transform 0.10s ease, border-color 0.12s ease, box-shadow 0.12s ease;
+}
+
+.db-card:hover { transform: translateY(-3px); }
+
+/* Hover: type-coloured border */
+.db-card.type-political:not(.selected):hover   { border-color: var(--c-political);   }
+.db-card.type-religious:not(.selected):hover   { border-color: var(--c-religious);   }
+.db-card.type-military:not(.selected):hover    { border-color: var(--c-military);    }
+.db-card.type-cultural:not(.selected):hover    { border-color: var(--c-cultural);    }
+.db-card.type-exploration:not(.selected):hover { border-color: var(--c-exploration); }
+
+/* Selected: bright yellow SNES-style highlight */
+.db-card.selected {
+  border-color: var(--snes-yellow);
+  box-shadow:
+    0 0 0 1px #000,
+    0 0 0 4px var(--snes-yellow),
+    0 0 12px rgba(248,208,0,0.4);
+}
+
+/* Image fills the entire tile */
+.db-card-img-wrap {
+  position: absolute;
+  inset: 0;
+  background: #040010;
+}
+
+.db-card-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+/* Faint initial letter — visible when art is missing */
+.db-card-img-placeholder {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--font);
+  font-size: 52px;
+  color: rgba(255,255,255,0.04);
+  pointer-events: none;
+}
+
+/* ── CC number — top-left, white @ 75% opacity ──────────────────
+   Large CT Galbite numeral sitting naturally in the corner.
+   Dark shadow ring keeps it readable over any card art.          */
+.db-overlay-cc {
+  position: absolute;
+  top: 8px;
+  left: 10px;
+  z-index: 4;
+  font-family: var(--font);
+  font-size: 52px;
+  line-height: 1;
+  color: rgba(255, 255, 255, 0.75);
+  text-shadow:
+    2px  2px 0 rgba(0,0,0,0.85),
+    -1px -1px 0 rgba(0,0,0,0.60),
+    3px  3px 4px rgba(0,0,0,0.70);
+  pointer-events: none;
+}
+
+/* ── IP number — top-right, black fill with white outline ────────
+   Solid black glyph with a multi-directional white stroke so it
+   pops against both light and dark card art backgrounds.          */
+.db-overlay-ip {
+  position: absolute;
+  top: 8px;
+  right: 10px;
+  z-index: 4;
+  font-family: var(--font);
+  font-size: 52px;
+  line-height: 1;
+  color: #000000;
+  /* 8-direction white stroke — values halved vs original */
+  text-shadow:
+    -1px -1px 0 #fff,  1px -1px 0 #fff,
+    -1px  1px 0 #fff,  1px  1px 0 #fff,
+    -2px  0   0 #fff,  2px  0   0 #fff,
+     0   -2px 0 #fff,  0    2px 0 #fff;
+  pointer-events: none;
+}
+
+/* ── Double-click flash animations ──────────────────────────────── */
+@keyframes flash-add {
+  /* Bright green pulse — card is being added to deck */
+  0%   { filter: brightness(1) drop-shadow(0 0  0px #48d848); }
+  25%  { filter: brightness(2) drop-shadow(0 0 14px #48d848); }
+  100% { filter: brightness(1) drop-shadow(0 0  0px #48d848); }
+}
+
+@keyframes flash-remove {
+  /* Brief dim-out — card is being removed from deck */
+  0%   { filter: brightness(1); }
+  30%  { filter: brightness(0.35) saturate(0.2); }
+  100% { filter: brightness(1); }
+}
+
+.db-card.flash-add    { animation: flash-add    0.36s ease-out forwards; }
+.db-card.flash-remove { animation: flash-remove 0.36s ease-out forwards; }
+
+/* ── "IN DECK" badge — fades in at bottom when selected ── */
+.db-card-in-deck {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  padding: 22px 6px 6px;
+  background: linear-gradient(transparent, rgba(0, 10, 0, 0.92));
+  text-align: center;
+  font-family: var(--font);
+  font-size: 11px;
+  letter-spacing: 0.14em;
+  color: var(--snes-green);
+  text-shadow: 0 0 6px var(--snes-green), 1px 1px 0 #000;
+  opacity: 0;
+  transition: opacity 0.15s ease;
+  pointer-events: none;
+}
+
+.db-card.selected .db-card-in-deck { opacity: 1; }
+
+
+/* ══════════════════════════════════════════════════════════════════
+   CARD DETAIL POPUP — SNES DIALOGUE BOX
+   Double-border frame: bright inner | dark gap | darker outer ring
+══════════════════════════════════════════════════════════════════ */
+
+/* Full-screen backdrop */
+.popup-backdrop {
+  position: absolute;
+  inset: 0;
+  z-index: 200;
+  background: rgba(0, 0, 14, 0.80);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.14s ease;
+}
+
+.popup-backdrop.visible {
+  opacity: 1;
+  pointer-events: all;
+}
+
+/* SNES-style dialogue panel */
+.card-popup {
+  width: 700px;
+  padding: 28px 32px 26px;
+  background: var(--bg-dialog);
+
+  /* Double-border via border + box-shadow:
+     inner bright → dark gap → darker outer ring            */
+  border: 3px solid var(--border-bright);
+  box-shadow:
+    0 0 0 3px var(--border-dark),   /* dark gap */
+    0 0 0 6px var(--border-mid),    /* outer ring */
+    0 0 0 7px var(--border-dark);   /* outermost dark edge */
+
+  border-radius: 0;                 /* pixel-perfect, no rounded corners */
+
+  /* Pop-in */
+  transform: scale(0.90);
+  transition: transform 0.16s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.popup-backdrop.visible .card-popup { transform: scale(1); }
+
+/* Card name — displayed as the "NPC speaker" header */
+.popup-card-name {
+  font-family: var(--font);
+  font-size: 34px;
+  color: var(--snes-yellow);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  text-shadow: 1px 1px 0 #000;
+  margin-bottom: 14px;
+}
+
+/* Horizontal rule between name and ability */
+.popup-divider {
+  height: 2px;
+  background: var(--border-bright);
+  box-shadow: 0 0 4px var(--border-bright);
+  margin-bottom: 14px;
+}
+
+/* Ability name — italic-style label in SNES cyan */
+.popup-ability-name {
+  font-family: var(--font);
+  font-size: 26px;
+  color: var(--snes-cyan);
+  text-transform: uppercase;
+  letter-spacing: 0.07em;
+  margin-bottom: 12px;
+  text-shadow: 0 0 6px var(--snes-cyan), 1px 1px 0 #000;
+}
+
+/* Ability text — main body copy, plain white */
+.popup-ability-text {
+  font-family: var(--font);
+  font-size: 26px;
+  color: var(--text-white);
+  line-height: 1.65;
+  min-height: 72px;
+  margin-bottom: 28px;
+  text-shadow: 1px 1px 0 #000;
+}
+
+/* Vanilla card: muted dimmed text */
+.popup-ability-text.vanilla { color: var(--text-dim); }
+
+/* IP breakdown line — shown for revealed board cards */
+.popup-ip-breakdown {
+  font-family: var(--font);
+  font-size:   22px;
+  color:       var(--snes-yellow);
+  text-align:  center;
+  letter-spacing: 0.04em;
+  padding:     6px 0 0;
+  border-top:  1px solid rgba(136,152,255,0.25);
+}
+
+/* Action row — hint left, CLOSE button right */
+.popup-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-top: 18px;
+}
+
+/* Dim instruction text telling players to double-click */
+.popup-hint {
+  flex: 1;
+  font-family: var(--font);
+  font-size: 20px;
+  color: var(--text-muted);
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  line-height: 1.4;
+}
+
+/* Close button in popup */
+.popup-actions .btn-snes {
+  font-size: 24px;
+  padding: 10px 22px;
+  flex-shrink: 0;
+}
+
+
+/* ══════════════════════════════════════════════════════════════════
+   SAVE TOAST
+══════════════════════════════════════════════════════════════════ */
+
+.save-toast {
+  position: absolute;
+  bottom: 32px;
+  left: 50%;
+  transform: translateX(-50%) translateY(16px);
+  /* SNES dialogue border */
+  background: var(--bg-dialog);
+  border: 2px solid var(--snes-green);
+  box-shadow:
+    0 0 0 2px #000,
+    0 0 0 4px #1a4020,
+    0 0 10px rgba(72,216,72,0.4);
+  color: var(--snes-green);
+  font-family: var(--font);
+  font-size: 14px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  padding: 10px 28px;
+  opacity: 0;
+  pointer-events: none;
+  z-index: 300;
+}
+
+.save-toast.show { animation: toast-in 2.6s ease forwards; }
+
+@keyframes toast-in {
+  0%   { opacity: 0; transform: translateX(-50%) translateY(16px); }
+  12%  { opacity: 1; transform: translateX(-50%) translateY(0);    }
+  80%  { opacity: 1; transform: translateX(-50%) translateY(0);    }
+  100% { opacity: 0; transform: translateX(-50%) translateY(-8px); }
+}
+
+
+/* ══════════════════════════════════════════════════════════════════
+   BATTLE SCREEN
+══════════════════════════════════════════════════════════════════ */
+
+#screen-battle.active {
+  display: flex;
+  flex-direction: column;
+  width: 1280px;
+  height: 800px;
+  overflow: hidden;
+  background:
+    repeating-linear-gradient(
+      0deg,
+      rgba(0,0,0,0)    0px, rgba(0,0,0,0)    3px,
+      rgba(0,0,0,0.08) 3px, rgba(0,0,0,0.08) 4px
+    ),
+    var(--bg-base);
+}
+
+
+/* ── Battle Header ─────────────────────────────────────────────── */
+
+.battle-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: 46px;
+  flex-shrink: 0;
+  padding: 0 20px;
+  background: var(--bg-header);
+  border-bottom: 2px solid var(--border-mid);
+  box-shadow: 0 2px 8px rgba(0,0,0,0.6);
+}
+
+.battle-turn-info {
+  font-size: 14px;
+  color: var(--snes-yellow);
+  letter-spacing: 0.10em;
+  text-transform: uppercase;
+}
+
+.battle-phase-info {
+  font-size: 13px;
+  color: var(--text-dim);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.battle-capital-info {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 1px;
+}
+
+.battle-capital-label {
+  font-family: var(--font);
+  font-size: 9px;
+  color: var(--text-dim);
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  line-height: 1;
+}
+
+.battle-capital-num {
+  font-family: var(--font);
+  font-size: 28px;
+  color: var(--snes-cyan);
+  line-height: 1;
+  letter-spacing: 0.04em;
+  text-shadow:
+    0 0 14px rgba(64,224,224,0.55),
+    1px 1px 0 #000;
+}
+
+
+/* ── Opponent Hand ─────────────────────────────────────────────── */
+
+.battle-opp-hand {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  height: 98px;
+  flex-shrink: 0;
+  padding: 0 20px;
+  background: rgba(0,0,0,0.40);
+  border-bottom: 1px solid var(--border-dark);
+}
+
+/* Face-down card back */
+.battle-card-back {
+  width: 48px;
+  height: 72px;
+  flex-shrink: 0;
+  border-radius: 2px;
+  border: 2px solid var(--border-mid);
+  box-shadow:
+    0 0 0 1px #000,
+    inset 0 0 0 2px var(--border-dark);
+  background: var(--bg-surface) url('../images/SOG_Card_Back.jpg') center / cover no-repeat;
+}
+
+
+/* ── Play Board (3 columns) ────────────────────────────────────── */
+
+.battle-board {
+  display: flex;
+  flex: 1;
+  min-height: 0;
+  gap: 28px;
+  padding: 4px 16px;
+}
+
+.battle-col {
+  position: relative;   /* anchor for the inter-column divider and Kente glow */
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-width: 0;
+  gap: 6px;
+  border-radius: 4px;
+}
+
+/* Vertical divider line between location columns */
+.battle-col:not(:last-child)::after {
+  content: '';
+  position: absolute;
+  top: 4px;
+  bottom: 4px;
+  right: -15px;         /* midpoint of the 28px gap */
+  width: 2px;
+  background: linear-gradient(
+    to bottom,
+    transparent,
+    var(--border-mid) 12%,
+    var(--border-mid) 88%,
+    transparent
+  );
+  pointer-events: none;
+}
+
+
+/* ── Card Slot Areas ───────────────────────────────────────────── */
+
+.battle-slots-opp,
+.battle-slots-player {
+  display: flex;
+  flex-direction: row;
+  gap: 6px;
+  height: 140px;
+  flex-shrink: 0;
+}
+
+.battle-slots-opp    { align-items: flex-end;   }
+.battle-slots-player { align-items: flex-start; }
+
+.battle-card-slot {
+  flex: 1;
+  aspect-ratio: 2 / 3;
+  max-height: 100%;
+  border: 2px dashed rgba(136,152,255,0.22);
+  border-radius: 2px;
+  background: rgba(0,0,0,0.28);
+  position: relative;
+  overflow: hidden;
+}
+
+.battle-card-slot.occupied {
+  border-style: solid;
+  border-color: var(--border-mid);
+}
+
+
+/* ── Location Tile ─────────────────────────────────────────────── */
+
+.battle-location {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: row;
+  align-items: stretch;
+  background: var(--bg-dialog);
+  /* SNES double-border */
+  border: 3px solid var(--border-bright);
+  box-shadow:
+    0 0 0 3px #000,
+    0 0 0 6px var(--border-mid);
+}
+
+.battle-loc-score-opp,
+.battle-loc-score-player {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  flex-shrink: 0;
+  font-size: 20px;
+  line-height: 1;
+}
+
+.battle-loc-score-opp    { color: var(--snes-red);  }
+.battle-loc-score-player { color: var(--snes-cyan); }
+
+.battle-loc-info {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  padding: 4px 8px;
+  gap: 2px;
+  overflow: hidden;
+}
+
+.battle-loc-name {
+  font-size: 13px;
+  color: var(--snes-yellow);
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.battle-loc-region {
+  font-size: 10px;
+  color: var(--text-muted);
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.battle-loc-ability {
+  font-size: 10px;
+  color: var(--text-dim);
+  line-height: 1.35;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+
+/* ── Player Hand ───────────────────────────────────────────────── */
+
+.battle-player-hand {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  height: 280px;
+  flex-shrink: 0;
+  padding: 0 20px;
+  background: rgba(0,0,0,0.40);
+  border-top: 2px solid var(--border-mid);
+}
+
+
+/* ── Hand Cards (player) ───────────────────────────────────────── */
+
+.battle-hand-card {
+  position: relative;
+  width: 164px;
+  height: 246px;
+  flex-shrink: 0;
+  cursor: pointer;
+  border: 2px solid transparent;
+  border-radius: 2px;
+  overflow: hidden;
+  transition: transform 0.12s ease, border-color 0.12s ease, box-shadow 0.12s ease;
+}
+
+.battle-hand-card:hover {
+  transform: translateY(-10px);
+  border-color: var(--snes-yellow);
+  box-shadow: 0 0 0 1px #000, 0 0 0 3px var(--snes-yellow);
+}
+
+.battle-hand-card.selected {
+  transform: translateY(-16px);
+  border-color: var(--snes-green);
+  box-shadow: 0 0 0 1px #000, 0 0 0 3px var(--snes-green);
+}
+
+/* Scaled CC / IP overlays for doubled hand cards */
+.battle-hand-card .db-overlay-cc,
+.battle-hand-card .db-overlay-ip {
+  font-size: 36px;
+  top: 5px;
+}
+
+.battle-hand-card .db-overlay-cc { left: 6px;  }
+.battle-hand-card .db-overlay-ip { right: 6px; }
+
+
+/* ── Deck Pile ─────────────────────────────────────────────────── */
+/* Represents the remaining undrawn deck for each player.
+   Two pseudo-element layers give the "stacked cards" illusion.    */
+
+.battle-deck-pile {
+  position: relative;
+  flex-shrink: 0;
+  border-radius: 2px;
+  border: 2px solid var(--border-mid);
+  box-shadow: 0 0 0 1px #000, inset 0 0 0 2px var(--border-dark);
+  background: var(--bg-surface) url('../images/SOG_Card_Back.jpg') center / cover no-repeat;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  cursor: default;
+}
+
+/* Back layer of the stack */
+.battle-deck-pile::before,
+.battle-deck-pile::after {
+  content: '';
+  position: absolute;
+  inset: -2px;           /* match the border sizing of the element */
+  border-radius: 2px;
+  border: 2px solid var(--border-mid);
+  background: var(--bg-surface) url('../images/SOG_Card_Back.jpg') center / cover no-repeat;
+  box-shadow: 0 0 0 1px #000;
+}
+
+.battle-deck-pile::before { transform: translate(-5px,  5px); z-index: -2; }
+.battle-deck-pile::after  { transform: translate(-3px,  3px); z-index: -1; }
+
+/* Sizing for each context */
+.battle-opp-hand    .battle-deck-pile { width: 48px;  height: 72px;  }
+.battle-player-hand .battle-deck-pile { width: 82px;  height: 123px; }
+
+/* "DECK" label */
+.battle-deck-label {
+  position: relative;
+  z-index: 1;
+  font-family: var(--font);
+  font-size: 10px;
+  color: var(--border-bright);
+  letter-spacing: 0.12em;
+  text-shadow: 1px 1px 0 #000;
+  line-height: 1;
+}
+
+/* Card-count number */
+.battle-deck-count {
+  position: relative;
+  z-index: 1;
+  font-family: var(--font);
+  font-size: 13px;
+  color: var(--border-bright);
+  text-shadow: 1px 1px 0 #000;
+  background: rgba(0,0,0,0.55);
+  padding: 1px 6px;
+  border: 1px solid rgba(136,152,255,0.4);
+  line-height: 1.4;
+}
+
+/* Separator between pile and hand cards */
+.battle-hand-sep {
+  width: 1px;
+  height: 52px;
+  flex-shrink: 0;
+  background: rgba(136,152,255,0.25);
+  align-self: center;
+}
+
+
+/* ══════════════════════════════════════════════════════════════════
+   BATTLE SCREEN — GAME ENGINE UI  (Step 4)
+══════════════════════════════════════════════════════════════════ */
+
+/* ── Header left section (review button + turn info) ──────────── */
+
+.battle-header-left {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  min-width: 0;
+}
+
+/* Back to Results — shown only during gameboard review */
+.btn-back-results {
+  padding: 6px 14px;
+  font-family: var(--font);
+  font-size: 11px;
+  letter-spacing: 0.10em;
+  text-transform: uppercase;
+  background: var(--bg-btn);
+  border: 2px solid var(--border-bright);
+  color: var(--text-white);
+  cursor: pointer;
+  box-shadow: 0 3px 0 var(--border-mid), 0 4px 0 #000;
+  transition: background 0.08s, border-color 0.08s, color 0.08s,
+              transform 0.06s, box-shadow 0.06s;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+.btn-back-results:hover {
+  background: var(--bg-btn-hover);
+  border-color: var(--snes-yellow);
+  color: var(--snes-yellow);
+}
+.btn-back-results:active {
+  transform: translateY(3px);
+  box-shadow: 0 0 0 var(--border-mid), 0 1px 0 #000;
+}
+
+/* ── Header right section (capital + end-turn button) ─────────── */
+
+.battle-header-right {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+/* ── End Turn button ───────────────────────────────────────────── */
+
+.btn-end-turn {
+  padding: 6px 14px;
+  font-size: 11px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  border: 2px solid var(--snes-green);
+  color: var(--snes-green);
+  background: rgba(0, 30, 0, 0.85);
+  box-shadow: 0 0 0 1px #000, 0 3px 0 #003300;
+  transition: background 0.1s;
+}
+
+.btn-end-turn:hover:not(:disabled) {
+  background: rgba(0, 55, 0, 0.95);
+}
+
+.btn-end-turn:active:not(:disabled) {
+  transform: translateY(2px);
+  box-shadow: 0 0 0 1px #000, 0 1px 0 #003300;
+}
+
+.btn-end-turn:disabled {
+  border-color: var(--text-muted);
+  color: var(--text-muted);
+  background: var(--bg-btn);
+  box-shadow: none;
+  cursor: default;
+}
+
+
+/* ── Board slot states ─────────────────────────────────────────── */
+
+/* Empty player slots are clickable targets */
+.battle-card-slot[data-owner="player"]:not(.occupied) {
+  cursor: pointer;
+}
+
+.battle-card-slot[data-owner="player"]:not(.occupied):hover {
+  border-color: rgba(136, 152, 255, 0.50);
+  background: rgba(0, 0, 0, 0.40);
+}
+
+/* Face-down: card committed but not yet revealed */
+.battle-card-slot.face-down {
+  background: var(--bg-surface) url('../images/SOG_Card_Back.jpg') center / cover no-repeat;
+}
+
+/* Face-up: card revealed — contains card art and overlays */
+.battle-card-slot.face-up {
+  z-index: 0;   /* stacking context so overlays stay inside slot */
+}
+
+.battle-card-slot.face-up .db-overlay-cc,
+.battle-card-slot.face-up .db-overlay-ip {
+  font-size: 16px;
+  top: 2px;
+}
+
+.battle-card-slot.face-up .db-overlay-cc { left:  3px; }
+.battle-card-slot.face-up .db-overlay-ip { right: 3px; }
+
+
+/* ── Animations ────────────────────────────────────────────────── */
+
+/* Card reveal — face-down flips to face-up */
+@keyframes flip-in {
+  from { transform: scale(0.75); opacity: 0; }
+  to   { transform: scale(1);    opacity: 1; }
+}
+
+.flip-in {
+  animation: flip-in 0.30s ease-out forwards;
+}
+
+/* Deny flash — invalid action (not enough capital / slot occupied) */
+@keyframes flash-deny {
+  0%, 40% {
+    box-shadow:
+      0 0 0 2px var(--snes-red),
+      0 0 8px  var(--snes-red);
+  }
+  100% { box-shadow: none; }
+}
+
+.flash-deny {
+  animation: flash-deny 0.40s ease-out;
+}
+
+
+/* ── Reset Turn button ─────────────────────────────────────────── */
+
+.btn-reset-turn {
+  padding: 6px 14px;
+  font-size: 11px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  border: 2px solid var(--text-dim);
+  color: var(--text-dim);
+  background: rgba(10, 0, 30, 0.85);
+  box-shadow: 0 0 0 1px #000, 0 3px 0 #111130;
+  transition: background 0.1s, border-color 0.1s, color 0.1s;
+}
+
+.btn-reset-turn:hover:not(:disabled) {
+  border-color: var(--snes-red);
+  color: var(--snes-red);
+  background: rgba(25, 0, 0, 0.95);
+}
+
+.btn-reset-turn:active:not(:disabled) {
+  transform: translateY(2px);
+  box-shadow: 0 0 0 1px #000, 0 1px 0 #111130;
+}
+
+.btn-reset-turn:disabled {
+  border-color: var(--text-muted);
+  color: var(--text-muted);
+  background: var(--bg-btn);
+  box-shadow: none;
+  cursor: default;
+}
+
+
+/* ── Drag-and-drop visual states ───────────────────────────────── */
+
+/* Card being dragged from hand */
+.battle-hand-card.dragging {
+  opacity: 0.35;
+}
+
+/* Face-down board slot being dragged back to hand */
+.battle-card-slot.dragging {
+  opacity: 0.35;
+}
+
+/* Valid drop target highlight */
+.battle-card-slot.drag-over {
+  border-color: var(--snes-cyan);
+  border-style: solid;
+  background: rgba(64, 224, 224, 0.12);
+  box-shadow: inset 0 0 0 1px var(--snes-cyan);
+}
+
+/* Moveable card indicator — Magellan / Columbus during select phase */
+@keyframes moveable-pulse {
+  0%   { box-shadow: 0 0 0 2px var(--snes-yellow), inset 0 0 0 1px var(--snes-yellow); }
+  50%  { box-shadow: 0 0 8px 3px rgba(248,208,0,0.6), inset 0 0 0 1px var(--snes-yellow); }
+  100% { box-shadow: 0 0 0 2px var(--snes-yellow), inset 0 0 0 1px var(--snes-yellow); }
+}
+
+.battle-card-slot.moveable {
+  border-color: var(--snes-yellow);
+  border-style: solid;
+  cursor: grab;
+  animation: moveable-pulse 1.4s ease-in-out infinite;
+}
+
+.battle-card-slot.moveable:active {
+  cursor: grabbing;
+}
+
+/* Queued move indicator — card stays in place with pulsing arrow overlay */
+@keyframes queued-pulse {
+  0%, 100% { box-shadow: 0 0 0 2px #f5c518, inset 0 0 0 1px #f5c518; opacity: 1; }
+  50%       { box-shadow: 0 0 0 5px #f5c518, inset 0 0 0 2px #f5c518; opacity: 0.75; }
+}
+
+.battle-card-slot.queued-move {
+  border-color: #f5c518;
+  border-style: solid;
+  animation: queued-pulse 1s ease-in-out infinite;
+  position: relative;
+}
+
+.battle-card-slot.queued-move::after {
+  content: '⏳';
+  position: absolute;
+  bottom: 3px;
+  right: 4px;
+  font-size: 11px;
+  pointer-events: none;
+  z-index: 5;
+}
+
+/* ── Discard chooser modal (Erasmus + Francis of Assisi) ──────────── */
+
+.discard-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(5, 0, 21, 0.82);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 200;
+}
+
+.discard-panel {
+  max-width: 95vw;
+  padding: 24px 28px;
+  background: var(--bg-surface);
+  border: 3px solid var(--border-mid);
+  box-shadow:
+    0 0 0 1px var(--border-dark),
+    inset 0 0 0 1px var(--border-bright);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 20px;
+}
+
+.discard-title {
+  font-family: 'CTGalbite', monospace;
+  font-size: 0.85rem;
+  color: var(--snes-cyan);
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  text-align: center;
+  white-space: nowrap;
+}
+
+.discard-card-row {
+  display: flex;
+  flex-direction: row;
+  gap: 12px;
+  overflow-x: auto;
+  padding-bottom: 2px;
+}
+
+/* Visual card option — same dimensions and structure as .battle-hand-card */
+.discard-card-option {
+  position: relative;
+  width:  164px;
+  height: 246px;
+  flex-shrink: 0;
+  cursor: pointer;
+  border: 2px solid transparent;
+  border-radius: 2px;
+  overflow: hidden;
+  transition: transform 0.12s ease, border-color 0.12s ease, box-shadow 0.12s ease;
+}
+
+.discard-card-option:hover {
+  transform: translateY(-8px);
+  border-color: var(--snes-yellow);
+  box-shadow: 0 0 0 1px #000, 0 0 0 3px var(--snes-yellow);
+}
+
+/* Francis auto-selected state — highlighted without hover required */
+.discard-card-option.auto-selected {
+  border-color: var(--snes-yellow);
+  box-shadow: 0 0 0 1px #000, 0 0 0 3px var(--snes-yellow);
+}
+
+/* Scale CC/IP overlays to match .battle-hand-card size */
+.discard-card-option .db-overlay-cc,
+.discard-card-option .db-overlay-ip {
+  font-size: 36px;
+  top: 5px;
+}
+
+.discard-card-option .db-overlay-cc { left:  6px; }
+.discard-card-option .db-overlay-ip { right: 6px; }
+
+
+/* ── Score flash when a location score changes ─────────────────── */
+
+@keyframes score-pop {
+  0%   { transform: scale(1);    color: inherit; }
+  40%  { transform: scale(1.35); color: var(--snes-yellow); }
+  100% { transform: scale(1);    color: inherit; }
+}
+
+.score-pop {
+  animation: score-pop 0.35s ease-out;
+}
+
+
+/* ══════════════════════════════════════════════════════════════════
+   RESULT SCREEN
+   ══════════════════════════════════════════════════════════════════ */
+
+#screen-result.active {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--bg-base);
+}
+
+.result-wrap {
+  display:        flex;
+  flex-direction: column;
+  align-items:    center;
+  gap:            22px;
+  width:          600px;
+  padding:        40px 48px;
+  background:     var(--bg-surface);
+  border:         3px solid var(--border-mid);
+  box-shadow:
+    0 0 0 1px var(--border-dark),
+    inset 0 0 0 1px var(--border-bright);
+}
+
+/* ── Headline ─────────────────────────────────────────────────── */
+
+.result-headline {
+  font-family:    'CTGalbite', monospace;
+  font-size:      2.8rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.result-headline.result-player { color: var(--snes-yellow); }
+.result-headline.result-ai     { color: var(--snes-red);    }
+.result-headline.result-draw   { color: var(--snes-cyan);   }
+
+.result-subline {
+  font-family: 'CTGalbite', monospace;
+  font-size:   0.85rem;
+  color:       var(--text-dim);
+  text-align:  center;
+}
+
+/* ── Location breakdown ───────────────────────────────────────── */
+
+.result-locs {
+  width:         100%;
+  display:       flex;
+  flex-direction: column;
+  gap:           6px;
+}
+
+.result-loc-row {
+  display:         flex;
+  align-items:     center;
+  gap:             10px;
+  padding:         8px 12px;
+  background:      var(--bg-dialog);
+  border:          1px solid var(--border-mid);
+  font-family:     'CTGalbite', monospace;
+  font-size:       0.78rem;
+}
+
+.result-loc-name {
+  flex:       1;
+  color:      var(--text-white);
+  white-space: nowrap;
+  overflow:   hidden;
+  text-overflow: ellipsis;
+}
+
+.result-loc-scores {
+  display:     flex;
+  align-items: center;
+  gap:         10px;
+  font-size:   0.8rem;
+}
+
+.result-loc-you  { color: var(--text-dim); }
+.result-loc-opp  { color: var(--text-dim); }
+.result-loc-vs   { color: var(--text-dim); }
+
+/* Winning side gets brighter text */
+.result-loc-you.result-loc-winner  { color: var(--snes-yellow); }
+.result-loc-opp.result-loc-winner  { color: var(--snes-red);    }
+
+.result-loc-badge {
+  min-width:    36px;
+  padding:      2px 6px;
+  text-align:   center;
+  font-size:    0.7rem;
+  font-family:  'CTGalbite', monospace;
+  border:       1px solid currentColor;
+}
+
+.result-loc-badge-player { color: var(--snes-yellow); }
+.result-loc-badge-ai     { color: var(--snes-red);    }
+.result-loc-badge-tie    { color: var(--text-dim);    }
+
+/* ── Tiebreaker panel ─────────────────────────────────────────── */
+
+.result-tiebreaker {
+  width:       100%;
+  padding:     16px 20px;
+  background:  var(--bg-dialog);
+  border:      2px solid var(--snes-yellow);
+  box-shadow:  inset 0 0 0 1px rgba(248, 208, 0, 0.2);
+  text-align:  center;
+}
+
+.result-tb-label {
+  font-family:    'CTGalbite', monospace;
+  font-size:      0.75rem;
+  color:          var(--snes-yellow);
+  letter-spacing: 0.1em;
+  margin-bottom:  12px;
+}
+
+.result-tb-scores {
+  display:         flex;
+  justify-content: center;
+  align-items:     center;
+  gap:             32px;
+}
+
+.result-tb-col {
+  display:        flex;
+  flex-direction: column;
+  align-items:    center;
+  gap:            4px;
+}
+
+.result-tb-who {
+  font-family: 'CTGalbite', monospace;
+  font-size:   0.7rem;
+  color:       var(--text-dim);
+}
+
+.result-tb-num {
+  font-family: 'CTGalbite', monospace;
+  font-size:   2rem;
+  color:       var(--snes-white);
+}
+
+.result-tb-vs {
+  font-family: 'CTGalbite', monospace;
+  font-size:   0.9rem;
+  color:       var(--text-dim);
+}
+
+/* ── Action buttons ───────────────────────────────────────────── */
+
+.result-actions {
+  display: flex;
+  gap:     16px;
+  margin-top: 4px;
+}
+
+
+/* ════════════════════════════════════════════════════════════════
+   SNES ABILITY ANIMATIONS
+   ════════════════════════════════════════════════════════════════ */
+
+/* ── Keyframes ───────────────────────────────────────────────── */
+
+@keyframes pulse-yellow {
+  0%   { box-shadow: 0 0 0 0 rgba(248, 208, 0, 0.95); }
+  50%  { box-shadow: 0 0 0 14px rgba(248, 208, 0, 0.5); }
+  100% { box-shadow: 0 0 0 0 rgba(248, 208, 0, 0); }
+}
+
+@keyframes ripple-out {
+  0%   { box-shadow: 0 0 0 0 rgba(255, 255, 255, 0.80); }
+  100% { box-shadow: 0 0 0 16px rgba(255, 255, 255, 0); }
+}
+
+@keyframes card-shake {
+  0%   { transform: translateX(0); }
+  20%  { transform: translateX(-5px); }
+  40%  { transform: translateX(5px); }
+  60%  { transform: translateX(-4px); }
+  80%  { transform: translateX(3px); }
+  100% { transform: translateX(0); }
+}
+
+@keyframes float-up {
+  0%   { opacity: 1; transform: translateX(-50%) translateY(0); }
+  100% { opacity: 0; transform: translateX(-50%) translateY(-44px); }
+}
+
+@keyframes float-down {
+  0%   { opacity: 1; transform: translateX(-50%) translateY(0); }
+  100% { opacity: 0; transform: translateX(-50%) translateY(24px); }
+}
+
+@keyframes loc-win-glow {
+  0%   { background-color: transparent; }
+  25%  { background-color: rgba(255, 215, 0, 0.32); }
+  75%  { background-color: rgba(255, 215, 0, 0.32); }
+  100% { background-color: transparent; }
+}
+
+@keyframes celebrate-bounce {
+  0%   { transform: scale(1); }
+  20%  { transform: scale(1.18); }
+  45%  { transform: scale(0.94); }
+  65%  { transform: scale(1.08); }
+  82%  { transform: scale(0.97); }
+  100% { transform: scale(1); }
+}
+
+@keyframes sad-shake {
+  0%   { transform: translateX(0); }
+  18%  { transform: translateX(-8px); }
+  36%  { transform: translateX(8px); }
+  54%  { transform: translateX(-5px); }
+  72%  { transform: translateX(5px); }
+  100% { transform: translateX(0); }
+}
+
+/* ── Animation classes ───────────────────────────────────────── */
+
+.anim-pulse-yellow {
+  animation: pulse-yellow 0.55s ease-out;
+}
+
+.anim-ripple {
+  animation: ripple-out 0.55s ease-out;
+}
+
+.anim-shake {
+  animation: card-shake 0.42s ease-in-out;
+}
+
+/* Floating IP number */
+.anim-float-num {
+  position:      absolute;
+  font-family:   'CTGalbite', monospace;
+  font-size:     13px;
+  font-weight:   bold;
+  pointer-events: none;
+  z-index:       200;
+  left:          50%;
+  top:           28%;
+  white-space:   nowrap;
+}
+
+.anim-float-plus {
+  color:       #44ff88;
+  text-shadow: 0 0 6px #00ff66, 1px 1px 0 #000, -1px -1px 0 #000;
+}
+
+.anim-float-minus {
+  color:       #ff5555;
+  text-shadow: 0 0 6px #ff2222, 1px 1px 0 #000, -1px -1px 0 #000;
+}
+
+.anim-float-capital {
+  position:      absolute;
+  font-family:   'CTGalbite', monospace;
+  font-size:     12px;
+  font-weight:   bold;
+  pointer-events: none;
+  z-index:       200;
+  left:          50%;
+  top:           50%;
+  transform:     translateX(-50%);
+  white-space:   nowrap;
+  color:         #ffd700;
+  text-shadow:   0 0 8px #ffaa00, 1px 1px 0 #000, -1px -1px 0 #000;
+}
+
+/* Continuous ability glow — persistent blue-cyan border */
+.anim-cont-glow {
+  box-shadow: 0 0 0 2px rgba(64, 224, 224, 0.85),
+              0 0 10px 2px rgba(64, 224, 224, 0.4);
+}
+
+/* Location tile win flash */
+.anim-loc-win {
+  animation: loc-win-glow 1.6s ease-in-out;
+}
+
+/* Results screen animations */
+.anim-celebrate {
+  animation: celebrate-bounce 0.85s ease-in-out;
+}
+
+.anim-sad {
+  animation: sad-shake 0.65s ease-in-out;
+}
+
+/* Ensure slots and hand cards are position:relative for floatNumber */
+.battle-card-slot {
+  position: relative;
+}
+
+.battle-hand-card {
+  position: relative;
+}
+
+/* ── Jesus Christ ability animations ────────────────────────── */
+
+@keyframes jesus-ascend {
+  0%   { opacity: 1;   transform: translateY(0)     scale(1);    }
+  60%  { opacity: 0.6; transform: translateY(-60px) scale(1.06); }
+  100% { opacity: 0;   transform: translateY(-120px) scale(0.9); }
+}
+
+@keyframes jesus-return {
+  0%   { box-shadow: 0 0 0   0   rgba(255, 215, 0, 0);   opacity: 0.3; transform: scale(0.85); }
+  35%  { box-shadow: 0 0 28px 10px rgba(255, 215, 0, 0.95); opacity: 1;   transform: scale(1.08); }
+  70%  { box-shadow: 0 0 14px 4px  rgba(255, 215, 0, 0.55); opacity: 1;   transform: scale(1.0);  }
+  100% { box-shadow: 0 0 0   0   rgba(255, 215, 0, 0);   opacity: 1;   transform: scale(1.0);  }
+}
+
+.anim-jesus-ascend {
+  animation: jesus-ascend 1.4s ease-out forwards;
+  pointer-events: none;
+}
+
+.anim-jesus-return {
+  animation: jesus-return 0.75s ease-out forwards;
+}
+
+/* ── Battle music control widget ─────────────────────────────────── */
+.battle-music-ctrl {
+  position: fixed;
+  bottom: 14px;
+  left: 16px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: rgba(5, 0, 21, 0.88);
+  border: 1px solid var(--border-mid);
+  border-radius: 20px;
+  padding: 5px 12px 5px 8px;
+  z-index: 50;
+}
+
+.music-toggle-btn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 17px;
+  color: var(--snes-yellow);
+  padding: 0;
+  line-height: 1;
+  opacity: 0.85;
+  transition: opacity 0.15s, color 0.15s;
+  user-select: none;
+}
+.music-toggle-btn:hover { opacity: 1; }
+.music-toggle-btn.muted {
+  color: var(--text-dim);
+  opacity: 0.55;
+}
+
+.music-volume-slider {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 76px;
+  height: 3px;
+  background: var(--border-mid);
+  border-radius: 2px;
+  outline: none;
+  cursor: pointer;
+}
+.music-volume-slider::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 13px;
+  height: 13px;
+  border-radius: 50%;
+  background: var(--snes-yellow);
+  cursor: pointer;
+  border: none;
+}
+.music-volume-slider::-moz-range-thumb {
+  width: 13px;
+  height: 13px;
+  border-radius: 50%;
+  background: var(--snes-yellow);
+  cursor: pointer;
+  border: none;
+}
+
+
+/* ══════════════════════════════════════════════════════════════════
+   TOUCH SUPPORT
+   touch-action values control which browser gestures fire natively.
+   Elements with touch-action:none are fully managed by JS (initTouchDrag).
+   Elements with touch-action:manipulation get fast taps without double-
+   tap zoom, while still allowing the browser to scroll.
+══════════════════════════════════════════════════════════════════ */
+
+/* Fast, zoomless taps on all buttons and deck-builder cards */
+button,
+.db-card { touch-action: manipulation; }
+
+/* Volume slider: only allow horizontal panning (no accidental scroll) */
+.music-volume-slider { touch-action: pan-x; }
+
+/* Draggable battle elements — JS owns all touch events */
+.battle-hand-card,
+.battle-card-slot.face-down[data-owner="player"],
+.battle-card-slot.moveable[data-owner="player"] { touch-action: none; }
+
+
+/* ══════════════════════════════════════════════════════════════════
+   RESPONSIVE — MOBILE / TABLET  (< 768 px wide)
+══════════════════════════════════════════════════════════════════ */
+
+@media (max-width: 767px) {
+  /* Deck builder: 3-column card grid (fits ~360px wide phones) */
+  .db-card-row { grid-template-columns: repeat(3, 1fr); }
+
+  /* Ensure all interactive targets are at least 44 × 44 px */
+  .btn-snes    { min-height: 44px; padding-top: 11px; padding-bottom: 11px; }
+  .btn-primary { min-height: 52px; }
+  .btn-back,
+  .btn-watch-intro,
+  .btn-save    { min-height: 44px; }
+}
+
+
+/* ══════════════════════════════════════════════════════════════════
+   BATTLE SCREEN SCALE — sub-1280 px viewports
+   --battle-scale is computed by JS (window.innerWidth / 1280).
+   transform-origin top-left keeps the header pinned to the corner.
+══════════════════════════════════════════════════════════════════ */
+
+@media (max-width: 1279px) {
+  #screen-battle.active {
+    transform: scale(var(--battle-scale, 1));
+    transform-origin: top left;
+  }
+}
+
+
+/* ══════════════════════════════════════════════════════════════════
+   TUTORIAL OVERLAYS
+   All tutorial elements sit above every game screen via z-index.
+   Lucy's dialogue box uses the same SNES double-border style as
+   the card popup (.card-popup) — see that block for the pattern.
+══════════════════════════════════════════════════════════════════ */
+
+/* ── Dim layer ────────────────────────────────────────────────── */
+/* Covers all content below highlighted elements; pointer-events
+   are intentionally left on so the dim layer can forward dialogue
+   advances. Actual click handling is in tutorial.js.             */
+#tut-dim {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.55);
+  z-index: 900;
+}
+
+/* ── Skip button ──────────────────────────────────────────────── */
+#tut-skip {
+  position: fixed;
+  top: 12px;
+  right: 16px;
+  z-index: 1100;
+  font-family: var(--font);
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  color: var(--text-dim);
+  background: none;
+  border: 1px solid var(--border-mid);
+  padding: 5px 12px;
+  cursor: pointer;
+  opacity: 0.7;
+  transition: opacity 0.15s, color 0.15s;
+  touch-action: manipulation;
+}
+#tut-skip:hover { opacity: 1; color: var(--snes-yellow); }
+
+/* ── Dialogue box ─────────────────────────────────────────────── */
+#tut-box {
+  position: fixed;
+  bottom: 24px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 1000;
+
+  display: flex;
+  align-items: stretch;
+  gap: 0;
+
+  width: min(740px, calc(100vw - 32px));
+
+  background: var(--bg-dialog);
+  border: 3px solid var(--border-bright);
+  box-shadow:
+    0 0 0 3px var(--border-dark),
+    0 0 0 6px var(--border-mid),
+    0 0 0 7px var(--border-dark);
+
+  cursor: pointer;
+  user-select: none;
+}
+
+/* ── Portrait column ──────────────────────────────────────────── */
+.tut-portrait {
+  flex: 0 0 auto;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  width: 110px;
+  padding: 0;
+  background: rgba(0,0,0,0.25);
+  border-right: 2px solid var(--border-mid);
+  overflow: hidden;
+}
+
+/* Real photo — fills the portrait column, anchored to bottom */
+.tut-lucy-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: top center;
+  display: block;
+}
+
+/* Legacy SVG fallback (hidden unless image errors) */
+.tut-lucy-svg {
+  width: 80px;
+  height: auto;
+  display: block;
+  image-rendering: pixelated;
+}
+
+/* ── Text column ──────────────────────────────────────────────── */
+.tut-right {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  padding: 14px 18px 12px;
+  min-height: 100px;
+}
+
+.tut-speaker {
+  font-family: var(--font);
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  color: var(--snes-yellow);
+  margin-bottom: 6px;
+}
+
+.tut-text {
+  font-family: var(--font);
+  font-size: 14px;
+  line-height: 1.55;
+  color: var(--text-white);
+  flex: 1;
+  min-height: 48px;
+}
+
+.tut-hint {
+  font-family: var(--font);
+  font-size: 11px;
+  color: var(--text-dim);
+  margin-top: 10px;
+  letter-spacing: 0.06em;
+  animation: tut-hint-blink 1.4s ease-in-out infinite;
+}
+
+/* When Lucy is waiting for a specific action, swap hint colour */
+.tut-hint.tut-hint-action {
+  color: var(--snes-cyan);
+  animation: none;
+}
+
+@keyframes tut-hint-blink {
+  0%, 100% { opacity: 1; }
+  50%       { opacity: 0.35; }
+}
+
+/* ── Highlight (tut-lit) ──────────────────────────────────────── */
+/* Applied to the element Lucy is pointing at. Raises it above
+   the dim layer and pulses a gold outline.                       */
+.tut-lit {
+  position: relative;
+  z-index: 950 !important;
+  border-radius: 3px;
+  animation: tut-pulse 1.1s ease-in-out infinite;
+}
+
+@keyframes tut-pulse {
+  0%, 100% { box-shadow: 0 0 0 2px var(--snes-yellow),  0 0 10px 3px rgba(248,208,0,0.45); }
+  50%       { box-shadow: 0 0 0 3px var(--snes-yellow),  0 0 18px 6px rgba(248,208,0,0.70); }
+}
+
+/* ── Number highlight box (CC / IP tutorial callout) ─────────── */
+/* Fixed-positioned overlay that tracks exactly over a db-overlay-cc
+   or db-overlay-ip element.  Positioned by JS via pinNumHighlight(). */
+.tut-num-highlight {
+  position: fixed;
+  pointer-events: none;
+  z-index: 1050;           /* above tut-lit but below dialogue box */
+  border-radius: 2px;
+  box-sizing: border-box;
+  animation: tut-num-pulse 0.8s ease-in-out infinite;
+}
+
+@keyframes tut-num-pulse {
+  0%, 100% {
+    box-shadow:
+      0 0 0 2px var(--snes-yellow),
+      0 0 8px  3px rgba(248,208,0,0.6);
+    outline: 2px solid var(--snes-yellow);
+    outline-offset: 2px;
+  }
+  50% {
+    box-shadow:
+      0 0 0 3px var(--snes-yellow),
+      0 0 16px 6px rgba(248,208,0,0.85);
+    outline: 3px solid var(--snes-yellow);
+    outline-offset: 3px;
+  }
+}
+
+/* ── Selected hand card (click-to-play phase 1) ──────────────── */
+/* Applied when the player has clicked a card to "pick it up".
+   Distinct from tut-lit (Lucy's pointer) — this is the player's choice. */
+.tut-selected {
+  outline: 3px solid var(--snes-cyan) !important;
+  outline-offset: 2px;
+  transform: translateY(-6px) scale(1.07);
+  transition: transform 0.12s ease, outline 0.1s;
+  position: relative;
+  z-index: 10;
+}
+
+/* ── Valid placement slots (shown after card is selected) ────── */
+.tut-valid-slot {
+  box-shadow: inset 0 0 0 2px var(--snes-cyan), 0 0 8px 2px rgba(64,224,224,0.4) !important;
+}
+
+/* ── Lock — suppress all non-lit interactive elements ────────── */
+/* When body has .tut-locked, everything on the battle screen
+   that is NOT currently lit becomes non-interactive and dimmed. */
+body.tut-locked .battle-hand-card:not(.tut-lit),
+body.tut-locked .battle-card-slot:not(.tut-lit),
+body.tut-locked #battle-end-turn:not(.tut-lit),
+body.tut-locked #battle-reset-turn {
+  pointer-events: none !important;
+  opacity: 0.45;
+  transition: opacity 0.2s;
+}
+
+/* ── Completion panel ─────────────────────────────────────────── */
+#tut-end {
+  position: fixed;
+  inset: 0;
+  z-index: 1100;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0, 0, 0, 0.75);
+}
+
+.tut-end-box {
+  background: var(--bg-dialog);
+  border: 3px solid var(--border-bright);
+  box-shadow:
+    0 0 0 3px var(--border-dark),
+    0 0 0 6px var(--border-mid),
+    0 0 0 7px var(--border-dark);
+
+  padding: 36px 48px;
+  text-align: center;
+  max-width: 480px;
+  width: calc(100vw - 48px);
+}
+
+.tut-end-text {
+  font-family: var(--font);
+  font-size: 15px;
+  line-height: 1.6;
+  color: var(--text-white);
+  margin-bottom: 28px;
+}
+
+.tut-end-btns {
+  display: flex;
+  gap: 16px;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+/* ── Responsive adjustments ───────────────────────────────────── */
+@media (max-width: 767px) {
+  #tut-box {
+    bottom: 12px;
+    width: calc(100vw - 16px);
+  }
+
+  .tut-portrait { width: 72px; }
+  .tut-lucy-svg { width: 56px; }
+  .tut-text { font-size: 13px; }
+}

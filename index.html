@@ -1,0 +1,340 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <!-- Responsive viewport — scales to device width on phones/tablets,
+       preserves 1280px layout on Chromebooks via CSS transform         -->
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Shoulders of Giants</title>
+
+  <!-- Cinzel: historical serif headings | Crimson Text: card names/flavour | Source Sans 3: UI/ability text -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700&family=Crimson+Text:ital,wght@0,400;0,600;1,400&family=Source+Sans+3:wght@400;600&display=swap" rel="stylesheet">
+
+  <link rel="stylesheet" href="css/style.css">
+
+  <!-- Third-party libraries -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/howler/2.2.4/howler.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+</head>
+<body>
+
+  <!-- ═══════════════════════════════════════════════════════════════
+       HOME SCREEN — Welcome / "Are you ready?" screen
+  ════════════════════════════════════════════════════════════════ -->
+  <div id="screen-home" class="screen active">
+    <div class="home-content">
+      <div class="home-player-label">Player 1</div>
+      <div class="home-question">Are you ready to make history?</div>
+      <nav class="home-nav">
+        <button class="btn-snes btn-home-ready" id="btn-ready">I'm Ready</button>
+        <button class="btn-snes btn-home-learn" id="btn-learn">I'm Ready to Learn How</button>
+      </nav>
+    </div>
+
+    <!-- Coming Soon popup -->
+    <div id="coming-soon-backdrop" class="popup-backdrop">
+      <div class="card-popup">
+        <div class="popup-card-name">Tutorial</div>
+        <div class="popup-divider"></div>
+        <div class="popup-ability-text">Coming Soon</div>
+        <div class="popup-actions">
+          <button class="btn-snes btn-snes-close" id="coming-soon-close">CLOSE</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════════════════════
+       VIDEO INTRO SCREEN
+  ════════════════════════════════════════════════════════════════ -->
+  <div id="screen-video" class="screen">
+    <video id="intro-video" src="video/Title Intro.mp4" playsinline></video>
+  </div>
+
+  <!-- Radial wipe overlay (covers all screens during transition) -->
+  <div id="radial-wipe"></div>
+
+  <!-- ═══════════════════════════════════════════════════════════════
+       DECK BUILDER SCREEN
+  ════════════════════════════════════════════════════════════════ -->
+  <div id="screen-deckbuilder" class="screen">
+
+    <header class="db-header">
+      <div class="db-header-left">
+        <button class="btn-back" id="db-back">&#8592; Home</button>
+        <button class="btn-watch-intro" id="db-watch-intro">&#9654; Watch Intro</button>
+      </div>
+      <h2 class="db-title">Deck Builder</h2>
+      <div class="db-controls">
+        <button class="btn-snes btn-deselect-all" id="btn-deselect-all">Deselect All</button>
+        <span class="db-counter" id="db-counter">0 / 15</span>
+        <button class="btn-save" id="db-save" disabled>Let's Play</button>
+      </div>
+    </header>
+
+    <!-- Card grid — injected by deckbuilder.js -->
+    <main class="db-main" id="db-main"></main>
+
+    <!-- Save confirmation toast -->
+    <div class="save-toast" id="save-toast">&#10003;&nbsp; Deck Saved</div>
+
+    <!-- ── Card Detail Popup — SNES dialogue box style ─────────── -->
+    <!-- Clicking the backdrop (outside the panel) closes it       -->
+    <div id="card-popup-backdrop" class="popup-backdrop">
+      <div class="card-popup" id="card-popup">
+
+        <!-- Card name header -->
+        <div class="popup-card-name" id="popup-name"></div>
+
+        <div class="popup-divider"></div>
+
+        <!-- Ability name (italic label) + full ability text -->
+        <div class="popup-ability-name" id="popup-ability-name"></div>
+        <div class="popup-ability-text" id="popup-ability-text"></div>
+
+        <!-- Double-click hint + close button -->
+        <div class="popup-actions">
+          <span class="popup-hint">DOUBLE-CLICK CARD TO ADD / REMOVE</span>
+          <button class="btn-snes btn-snes-close" id="popup-close-btn">CLOSE</button>
+        </div>
+
+      </div>
+    </div>
+
+  </div>
+
+  <!-- ═══════════════════════════════════════════════════════════════
+       BATTLE SCREEN  (layout built in Step 3)
+  ════════════════════════════════════════════════════════════════ -->
+  <div id="screen-battle" class="screen">
+
+    <!-- Header bar: turn · phase · capital -->
+    <div class="battle-header" id="battle-header">
+      <div class="battle-header-left">
+        <button class="btn-back-results" id="btn-back-results" style="display:none">&#8592; Back to Results</button>
+        <div class="battle-turn-info" id="battle-turn-info"></div>
+      </div>
+      <div class="battle-phase-info"   id="battle-phase-info"></div>
+      <div class="battle-header-right">
+        <div class="battle-capital-info" id="battle-capital-info"></div>
+        <button class="btn-reset-turn" id="battle-reset-turn" disabled>RESET TURN</button>
+        <button class="btn-end-turn"   id="battle-end-turn"   disabled>END TURN</button>
+      </div>
+    </div>
+
+    <!-- Opponent's face-down hand (injected by ui.js) -->
+    <div class="battle-opp-hand" id="battle-opp-hand"></div>
+
+    <!-- 3-column play board (injected by ui.js) -->
+    <div class="battle-board" id="battle-board"></div>
+
+    <!-- Player's face-up hand (injected by ui.js) -->
+    <div class="battle-player-hand" id="battle-player-hand"></div>
+
+    <!-- ── Music volume control ───────────────────────────────── -->
+    <div id="battle-music-ctrl" class="battle-music-ctrl">
+      <button id="music-toggle-btn" class="music-toggle-btn" title="Toggle music">♫</button>
+      <input type="range" id="music-volume-slider" class="music-volume-slider" min="0" max="100" value="10">
+    </div>
+
+    <!-- ── Card info popup (click any hand card to open) ───────── -->
+    <div id="battle-popup-backdrop" class="popup-backdrop">
+      <div class="card-popup">
+        <div class="popup-card-name"    id="battle-popup-name"></div>
+        <div class="popup-divider"></div>
+        <div class="popup-ability-name" id="battle-popup-ability-name"></div>
+        <div class="popup-ability-text" id="battle-popup-ability-text"></div>
+        <div class="popup-ip-breakdown" id="battle-popup-ip-breakdown" style="display:none"></div>
+        <div class="popup-actions">
+          <span class="popup-hint" id="battle-popup-hint">DRAG CARD TO A SLOT TO PLAY</span>
+          <button class="btn-snes btn-snes-close" id="battle-popup-close">CLOSE</button>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- ═══════════════════════════════════════════════════════════════
+       RESULT SCREEN
+  ════════════════════════════════════════════════════════════════ -->
+  <div id="screen-result" class="screen">
+    <div class="result-wrap">
+
+      <!-- Headline: VICTORY / DEFEAT / DRAW -->
+      <div class="result-headline" id="result-headline">VICTORY</div>
+      <div class="result-subline"  id="result-subline"></div>
+
+      <!-- Per-location score breakdown (rows injected by game.js) -->
+      <div class="result-locs" id="result-locs"></div>
+
+      <!-- Tiebreaker panel — only shown when total IP decided the outcome -->
+      <div class="result-tiebreaker" id="result-tiebreaker" style="display:none">
+        <div class="result-tb-label">TIEBREAKER &mdash; Total IP</div>
+        <div class="result-tb-scores">
+          <span class="result-tb-col">
+            <span class="result-tb-who">YOU</span>
+            <strong class="result-tb-num" id="result-tb-player">—</strong>
+          </span>
+          <span class="result-tb-vs">vs</span>
+          <span class="result-tb-col">
+            <span class="result-tb-who">OPPONENT</span>
+            <strong class="result-tb-num" id="result-tb-ai">—</strong>
+          </span>
+        </div>
+      </div>
+
+      <!-- Navigation -->
+      <div class="result-actions">
+        <button class="btn-primary" id="result-play-again">Play Again</button>
+        <button class="btn-primary" id="result-home">Home</button>
+        <button class="btn-primary" id="result-gameboard">Gameboard</button>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════════════════════
+       TUTORIAL OVERLAYS  (rendered above all screens via z-index)
+  ════════════════════════════════════════════════════════════════ -->
+
+  <!-- Dim layer — blocks clicks on non-highlighted elements when locked -->
+  <div id="tut-dim" style="display:none"></div>
+
+  <!-- Skip button — always visible while tutorial is active -->
+  <button id="tut-skip" style="display:none">SKIP TUTORIAL</button>
+
+  <!-- Lucy dialogue box -->
+  <div id="tut-box" style="display:none">
+    <div class="tut-portrait">
+      <img src="images/Lucy.png" alt="Lucy" class="tut-lucy-img">
+      <!-- legacy SVG kept as fallback if image fails to load, hidden by default -->
+      <svg viewBox="0 0 80 110" xmlns="http://www.w3.org/2000/svg" shape-rendering="crispEdges" class="tut-lucy-svg" style="display:none">
+        <!-- Wild hair — dark outer halo -->
+        <rect x="10" y="2"  width="60" height="10" fill="#1a0800"/>
+        <rect x="4"  y="10" width="14" height="34" fill="#1a0800"/>
+        <rect x="62" y="10" width="14" height="34" fill="#1a0800"/>
+        <rect x="6"  y="38" width="8"  height="14" fill="#1a0800"/>
+        <rect x="66" y="38" width="8"  height="12" fill="#1a0800"/>
+        <!-- Hair mid layer -->
+        <rect x="14" y="4"  width="52" height="10" fill="#2e1000"/>
+        <rect x="10" y="12" width="10" height="26" fill="#2e1000"/>
+        <rect x="60" y="12" width="10" height="26" fill="#2e1000"/>
+        <!-- Hair inner highlight -->
+        <rect x="20" y="4"  width="40" height="7"  fill="#4a1c00"/>
+        <!-- Head -->
+        <rect x="18" y="10" width="44" height="38" fill="#c07840"/>
+        <!-- Brow ridge (prominent early-human feature) -->
+        <rect x="18" y="10" width="44" height="8"  fill="#8a4820"/>
+        <!-- Cheek shading -->
+        <rect x="18" y="30" width="7"  height="12" fill="#a86030"/>
+        <rect x="55" y="30" width="7"  height="12" fill="#a86030"/>
+        <!-- Thick eyebrows -->
+        <rect x="20" y="19" width="16" height="5"  fill="#1a0800"/>
+        <rect x="44" y="19" width="16" height="5"  fill="#1a0800"/>
+        <rect x="20" y="24" width="4"  height="2"  fill="#1a0800"/>
+        <rect x="56" y="24" width="4"  height="2"  fill="#1a0800"/>
+        <!-- Eye whites -->
+        <rect x="22" y="25" width="14" height="9"  fill="#fff"/>
+        <rect x="44" y="25" width="14" height="9"  fill="#fff"/>
+        <!-- Pupils -->
+        <rect x="25" y="26" width="8"  height="7"  fill="#1a0800"/>
+        <rect x="47" y="26" width="8"  height="7"  fill="#1a0800"/>
+        <!-- Eye shine -->
+        <rect x="26" y="27" width="3"  height="3"  fill="#ffffff"/>
+        <rect x="48" y="27" width="3"  height="3"  fill="#ffffff"/>
+        <!-- Broad, flat nose -->
+        <rect x="33" y="35" width="14" height="7"  fill="#8a4820"/>
+        <rect x="28" y="38" width="6"  height="5"  fill="#8a4820"/>
+        <rect x="46" y="38" width="6"  height="5"  fill="#8a4820"/>
+        <rect x="29" y="40" width="4"  height="3"  fill="#5a2800"/>
+        <rect x="47" y="40" width="4"  height="3"  fill="#5a2800"/>
+        <!-- Warm smile -->
+        <rect x="26" y="45" width="6"  height="3"  fill="#a83820"/>
+        <rect x="32" y="46" width="16" height="3"  fill="#a83820"/>
+        <rect x="48" y="45" width="6"  height="3"  fill="#a83820"/>
+        <!-- Teeth -->
+        <rect x="32" y="45" width="16" height="2"  fill="#f0e0c8"/>
+        <!-- Neck -->
+        <rect x="30" y="48" width="20" height="10" fill="#c07840"/>
+        <rect x="30" y="48" width="4"  height="10" fill="#a86030"/>
+        <rect x="46" y="48" width="4"  height="10" fill="#a86030"/>
+        <!-- Bead necklace -->
+        <rect x="27" y="54" width="5"  height="5"  fill="#d89020"/>
+        <rect x="34" y="52" width="5"  height="5"  fill="#e8a830"/>
+        <rect x="41" y="52" width="5"  height="5"  fill="#d89020"/>
+        <rect x="48" y="54" width="5"  height="5"  fill="#e8a830"/>
+        <!-- Body — animal skin base -->
+        <rect x="8"  y="58" width="64" height="52" fill="#c8a050"/>
+        <rect x="18" y="58" width="44" height="52" fill="#d4aa60"/>
+        <!-- Leopard spots -->
+        <rect x="11" y="64" width="9"  height="6"  fill="#4a2800"/>
+        <rect x="12" y="70" width="6"  height="4"  fill="#4a2800"/>
+        <rect x="24" y="62" width="11" height="5"  fill="#4a2800"/>
+        <rect x="25" y="67" width="7"  height="4"  fill="#4a2800"/>
+        <rect x="40" y="60" width="10" height="5"  fill="#4a2800"/>
+        <rect x="54" y="64" width="10" height="6"  fill="#4a2800"/>
+        <rect x="55" y="70" width="6"  height="4"  fill="#4a2800"/>
+        <rect x="16" y="78" width="10" height="5"  fill="#4a2800"/>
+        <rect x="34" y="74" width="11" height="6"  fill="#4a2800"/>
+        <rect x="52" y="78" width="10" height="5"  fill="#4a2800"/>
+        <rect x="12" y="88" width="10" height="5"  fill="#4a2800"/>
+        <rect x="30" y="86" width="9"  height="6"  fill="#4a2800"/>
+        <rect x="48" y="88" width="11" height="5"  fill="#4a2800"/>
+        <!-- Left arm (slightly raised) -->
+        <rect x="0"  y="56" width="10" height="32" fill="#c07840"/>
+        <rect x="0"  y="88" width="12" height="9"  fill="#c07840"/>
+        <!-- Right arm -->
+        <rect x="70" y="60" width="10" height="30" fill="#c07840"/>
+        <rect x="68" y="90" width="12" height="8"  fill="#c07840"/>
+      </svg>
+    </div>
+    <div class="tut-right">
+      <div class="tut-speaker">Lucy</div>
+      <div id="tut-text" class="tut-text"></div>
+      <div id="tut-hint" class="tut-hint">&#9654; Click to continue</div>
+    </div>
+  </div>
+
+  <!-- Tutorial completion panel -->
+  <div id="tut-end" style="display:none">
+    <div class="tut-end-box">
+      <div id="tut-end-text" class="tut-end-text"></div>
+      <div class="tut-end-btns">
+        <button id="tut-btn-ready" class="btn-snes">I'm Ready!</button>
+        <button id="tut-btn-again" class="btn-snes">Show Me Again</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── Global screen navigation (available to all modules) ──── -->
+  <script>
+    /**
+     * showScreen(id)
+     * Deactivates all screens and activates the one with the given id.
+     * @param {string} id  e.g. 'screen-home' | 'screen-deckbuilder' | 'screen-battle' | 'screen-result'
+     */
+    function showScreen(id) {
+      document.querySelectorAll('.screen').forEach(function (s) {
+        s.classList.remove('active');
+      });
+      document.getElementById(id).classList.add('active');
+    }
+  </script>
+
+  <!-- ── Data files ─────────────────────────────────────────────── -->
+  <script src="js/cards.js"></script>
+  <script src="js/locations.js"></script>
+
+  <!-- ── Feature modules (load order matters) ──────────────────── -->
+  <script src="js/audio.js"></script>
+  <script src="js/animations.js"></script>
+  <script src="js/deckbuilder.js"></script>
+  <script src="js/ui.js"></script>
+  <script src="js/ai.js"></script>
+  <script src="js/tutorial.js"></script>
+  <script src="js/game.js"></script>
+
+</body>
+</html>
