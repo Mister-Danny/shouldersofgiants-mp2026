@@ -268,17 +268,36 @@
 
   /* ── Persistence ─────────────────────────────────────────────── */
 
-  // Pre-load deck-select music so it plays with zero latency on video end
-  var deckMusic = new Audio('music/Dozing Off Card Select.m4a');
-  deckMusic.preload = 'auto';
-  deckMusic.loop    = false;
+  // Deck-select background music (Howler for reliable cross-browser playback)
+  var _deckHowl = null;
+
+  function getDeckMusic() {
+    if (!_deckHowl && typeof Howl !== 'undefined') {
+      _deckHowl = new Howl({
+        src:    ['music/Dozing Off Card Select.m4a'],
+        volume: 0.5,
+        loop:   false,
+        html5:  true
+      });
+    }
+    return _deckHowl;
+  }
+
+  function playDeckMusic() {
+    var m = getDeckMusic();
+    if (!m) return;
+    if (!m.playing()) { m.seek(0); m.play(); }
+  }
+
+  function stopDeckMusic() {
+    if (_deckHowl && _deckHowl.playing()) { _deckHowl.stop(); }
+  }
 
   function saveDeck() {
     if (selectedIds.size !== DECK_SIZE) return;
     localStorage.setItem(STORAGE_KEY, JSON.stringify(Array.from(selectedIds)));
     // Stop music immediately before leaving the deck builder
-    deckMusic.pause();
-    deckMusic.currentTime = 0;
+    stopDeckMusic();
     showScreen('screen-battle');
     if (typeof initGame === 'function') initGame();
   }
@@ -336,13 +355,12 @@
     }, 650); // matches radial-wipe-expand duration
   });
 
-  // Video ended → deck builder; music starts with zero delay (pre-loaded)
+  // Video ended → deck builder; music starts with zero delay
   document.getElementById('intro-video').addEventListener('ended', function () {
     localStorage.setItem('sog_intro_seen', 'true');
     showScreen('screen-deckbuilder');
     initDeckBuilder();
-    deckMusic.currentTime = 0;
-    deckMusic.play().catch(function () {});
+    playDeckMusic();
   });
 
   // "I'm Ready to Learn How" — show Coming Soon popup
@@ -365,8 +383,7 @@
   // "Watch Intro" button in the deck builder header — returns to home screen
   document.getElementById('db-watch-intro').addEventListener('click', function () {
     var wipe = document.getElementById('radial-wipe');
-    deckMusic.pause();
-    deckMusic.currentTime = 0;
+    stopDeckMusic();
     wipe.classList.add('animating');
     setTimeout(function () {
       showScreen('screen-home');
@@ -381,8 +398,7 @@
   if (localStorage.getItem('sog_intro_seen')) {
     showScreen('screen-deckbuilder');
     initDeckBuilder();
-    deckMusic.currentTime = 0;
-    deckMusic.play().catch(function () {});
+    playDeckMusic();
   }
 
 })();

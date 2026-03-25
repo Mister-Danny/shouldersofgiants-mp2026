@@ -1453,26 +1453,31 @@ img    { display: block; }
 }
 
 /* Queued move indicator — card stays in place with pulsing arrow overlay */
-@keyframes queued-pulse {
-  0%, 100% { box-shadow: 0 0 0 2px #f5c518, inset 0 0 0 1px #f5c518; opacity: 1; }
-  50%       { box-shadow: 0 0 0 5px #f5c518, inset 0 0 0 2px #f5c518; opacity: 0.75; }
+/* Queued-move destination: card appears at dest during select phase with pulsing gold border */
+@keyframes queued-dest-pulse {
+  0%, 100% { box-shadow: 0 0 0 2px #f5c518, inset 0 0 0 1px #f5c518; }
+  50%       { box-shadow: 0 0 0 5px #f5c518, inset 0 0 0 2px rgba(245,197,24,0.5); }
 }
 
-.battle-card-slot.queued-move {
+.battle-card-slot.queued-dest {
   border-color: #f5c518;
   border-style: solid;
-  animation: queued-pulse 1s ease-in-out infinite;
+  animation: queued-dest-pulse 1s ease-in-out infinite;
   position: relative;
+  pointer-events: none;   /* can't interact with a preview card */
+  opacity: 0.88;
 }
 
-.battle-card-slot.queued-move::after {
-  content: '⏳';
+.battle-card-slot.queued-dest::after {
+  content: '→';
   position: absolute;
   bottom: 3px;
-  right: 4px;
-  font-size: 11px;
+  right: 5px;
+  font-size: 13px;
+  color: #f5c518;
   pointer-events: none;
   z-index: 5;
+  text-shadow: 0 0 4px rgba(0,0,0,0.8);
 }
 
 /* ── Discard chooser modal (Erasmus + Francis of Assisi) ──────────── */
@@ -1895,62 +1900,81 @@ img    { display: block; }
   animation: jesus-return 0.75s ease-out forwards;
 }
 
-/* ── Battle music control widget ─────────────────────────────────── */
+/* ── Battle music player widget ───────────────────────────────────── */
 .battle-music-ctrl {
   position: fixed;
   bottom: 14px;
   left: 16px;
   display: flex;
-  align-items: center;
-  gap: 8px;
+  flex-direction: column;
+  gap: 5px;
   background: rgba(5, 0, 21, 0.88);
   border: 1px solid var(--border-mid);
-  border-radius: 20px;
-  padding: 5px 12px 5px 8px;
+  border-radius: 8px;
+  padding: 7px 10px 6px;
   z-index: 50;
+  min-width: 158px;
 }
 
-.music-toggle-btn {
+.music-track-name {
+  font-family: 'CT Galbite', monospace;
+  font-size: 8px;
+  color: var(--snes-yellow);
+  text-align: center;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  opacity: 0.85;
+  letter-spacing: 0.4px;
+  text-transform: uppercase;
+}
+
+.music-controls {
+  display: flex;
+  align-items: center;
+  gap: 3px;
+}
+
+.music-ctrl-btn {
   background: none;
   border: none;
   cursor: pointer;
-  font-size: 17px;
+  font-size: 9px;
   color: var(--snes-yellow);
-  padding: 0;
+  padding: 2px 4px;
   line-height: 1;
-  opacity: 0.85;
-  transition: opacity 0.15s, color 0.15s;
+  opacity: 0.75;
+  transition: opacity 0.15s;
   user-select: none;
+  flex-shrink: 0;
 }
-.music-toggle-btn:hover { opacity: 1; }
-.music-toggle-btn.muted {
-  color: var(--text-dim);
-  opacity: 0.55;
-}
+.music-ctrl-btn:hover { opacity: 1; }
+.music-play-btn { font-size: 11px; padding: 2px 5px; }
 
 .music-volume-slider {
   -webkit-appearance: none;
   appearance: none;
-  width: 76px;
+  flex: 1;
   height: 3px;
   background: var(--border-mid);
   border-radius: 2px;
   outline: none;
   cursor: pointer;
+  margin-left: 4px;
 }
 .music-volume-slider::-webkit-slider-thumb {
   -webkit-appearance: none;
   appearance: none;
-  width: 13px;
-  height: 13px;
+  width: 11px;
+  height: 11px;
   border-radius: 50%;
   background: var(--snes-yellow);
   cursor: pointer;
   border: none;
 }
 .music-volume-slider::-moz-range-thumb {
-  width: 13px;
-  height: 13px;
+  width: 11px;
+  height: 11px;
   border-radius: 50%;
   background: var(--snes-yellow);
   cursor: pointer;

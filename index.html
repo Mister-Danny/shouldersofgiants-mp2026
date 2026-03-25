@@ -133,10 +133,15 @@
     <!-- Player's face-up hand (injected by ui.js) -->
     <div class="battle-player-hand" id="battle-player-hand"></div>
 
-    <!-- ── Music volume control ───────────────────────────────── -->
+    <!-- ── Music player ───────────────────────────────────────── -->
     <div id="battle-music-ctrl" class="battle-music-ctrl">
-      <button id="music-toggle-btn" class="music-toggle-btn" title="Toggle music">♫</button>
-      <input type="range" id="music-volume-slider" class="music-volume-slider" min="0" max="100" value="10">
+      <div class="music-track-name" id="music-track-name">Cupids Revenge</div>
+      <div class="music-controls">
+        <button id="music-prev-btn" class="music-ctrl-btn" title="Previous">&#9664;&#9664;</button>
+        <button id="music-play-btn" class="music-ctrl-btn music-play-btn" title="Play/Pause">&#9654;</button>
+        <button id="music-next-btn" class="music-ctrl-btn" title="Next">&#9654;&#9654;</button>
+        <input type="range" id="music-volume-slider" class="music-volume-slider" min="0" max="100" value="10">
+      </div>
     </div>
 
     <!-- ── Card info popup (click any hand card to open) ───────── -->

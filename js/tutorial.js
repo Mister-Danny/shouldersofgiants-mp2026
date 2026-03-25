@@ -119,6 +119,7 @@
     TS.t5Count         = 0;
     TS.t5Locs          = {};
     TS.bonusCapital    = 0;
+    TS.cardIPBonus     = {};
 
     showEl(skipEl);
 
@@ -578,7 +579,7 @@
     var si = slots.indexOf(null);
     if (si === -1 || card.cc > TS.capital) return false;
 
-    slots[si] = { cardId: cardId, ip: card.ip, revealed: false };
+    slots[si] = { cardId: cardId, ip: card.ip + (TS.cardIPBonus[cardId] || 0), revealed: false };
     TS.capital -= card.cc;
     TS.playerHand = TS.playerHand.filter(function (id) { return id !== cardId; });
 
@@ -643,19 +644,20 @@
         return;
       }
       var item = combined[idx++];
-      flipCard(item);
-      updateScores();
-      setTimeout(next, 1000);
+      flipCard(item, function () {
+        updateScores();
+        setTimeout(next, 1000);
+      });
     }
     next();
   }
 
-  function flipCard(item) {
+  function flipCard(item, proceed) {
     item.sd.revealed = true;
     var card = CARDS.find(function (c) { return c.id === item.sd.cardId; });
-    if (!card) return;
+    if (!card) { if (proceed) proceed(); return; }
     var slotEl = getTutSlotEl(item.owner, item.locId, item.si);
-    if (!slotEl) return;
+    if (!slotEl) { if (proceed) proceed(); return; }
 
     // ── Flip SFX + animation ──────────────────────────────────────
     if (typeof SFX !== 'undefined') SFX.cardReveal();
@@ -703,6 +705,8 @@
           if (typeof Anim !== 'undefined') Anim.floatNumber(slotEl, allies);
           if (typeof SFX  !== 'undefined') SFX.ipGained();
         }
+        if (proceed) proceed();
+        return;
       }
 
       // Zheng He (id 23): deliver +2 IP to first revealed player card at each adjacent location
@@ -722,14 +726,75 @@
                 if (typeof Anim !== 'undefined') Anim.floatNumber(adjSlotEl, 2);
                 if (typeof SFX  !== 'undefined') SFX.ipGained();
               }
-              break; // only first revealed card per adjacent location
+              break;
             }
           }
         });
         updateScores();
+        if (proceed) proceed();
+        return;
       }
 
+      // Erasmus (id 9): player chooses a hand card to discard
+      if (cardId === 9 && item.owner === 'player') {
+        if (TS.playerHand.length === 0) { if (proceed) proceed(); return; }
+        if (typeof SFX !== 'undefined') SFX.atOnce();
+        tutShowDiscardChooser(TS.playerHand.slice(), function (chosenId) {
+          if (chosenId === null) { if (proceed) proceed(); return; }
+          if (typeof SFX !== 'undefined') SFX.cardDiscarded();
+          TS.playerHand = TS.playerHand.filter(function (id) { return id !== chosenId; });
+          // Jesus (id 10): gains +3 IP on discard and returns to hand
+          if (chosenId === 10) {
+            TS.cardIPBonus[10] = (TS.cardIPBonus[10] || 0) + 3;
+            TS.playerHand.push(10);
+            renderHand(TS.playerHand);
+            queueDialogues([
+              "There he is! Jesus comes back with +3\u00a0IP. That\u2019s the synergy \u2014 Erasmus sacrifices, Jesus returns stronger."
+            ], proceed || function () {});
+          } else {
+            renderHand(TS.playerHand);
+            if (proceed) proceed();
+          }
+        });
+        return;
+      }
+
+      if (proceed) proceed();
+
     }, 320);
+  }
+
+  /** Build and show the Erasmus discard-chooser modal inside the tutorial. */
+  function tutShowDiscardChooser(cardIds, callback) {
+    var backdrop = document.createElement('div');
+    backdrop.className = 'discard-backdrop';
+
+    var panel = document.createElement('div');
+    panel.className = 'discard-panel';
+
+    var titleEl = document.createElement('div');
+    titleEl.className   = 'discard-title';
+    titleEl.textContent = 'Erasmus — choose a card to discard';
+    panel.appendChild(titleEl);
+
+    var row = document.createElement('div');
+    row.className = 'discard-card-row';
+
+    cardIds.forEach(function (cardId) {
+      var card = CARDS.find(function (c) { return c.id === cardId; });
+      if (!card) return;
+      var el = buildHandCard(card, TS.cardIPBonus[cardId] || 0);
+      el.style.cursor = 'pointer';
+      el.addEventListener('click', function () {
+        document.body.removeChild(backdrop);
+        callback(cardId);
+      });
+      row.appendChild(el);
+    });
+
+    panel.appendChild(row);
+    backdrop.appendChild(panel);
+    document.body.appendChild(backdrop);
   }
 
   function updateScores() {
@@ -753,7 +818,7 @@
     cardIds.forEach(function (id) {
       var card = CARDS.find(function (c) { return c.id === id; });
       if (!card) return;
-      var el = buildHandCard(card);
+      var el = buildHandCard(card, TS.cardIPBonus[id] || 0);
       addTutDrag(el, id);
       playerHandEl.appendChild(el);
     });
@@ -764,7 +829,7 @@
     playerHandEl.appendChild(buildDeckPile(pileCount));
   }
 
-  function buildHandCard(card) {
+  function buildHandCard(card, ipBonus) {
     var el = document.createElement('div');
     el.className  = 'battle-hand-card';
     el.dataset.id = card.id;
@@ -784,7 +849,7 @@
     cc.textContent = card.cc;
     var ip = document.createElement('div');
     ip.className   = 'db-overlay-ip';
-    ip.textContent = card.ip;
+    ip.textContent = card.ip + (ipBonus || 0);
     el.appendChild(wrap);
     el.appendChild(cc);
     el.appendChild(ip);

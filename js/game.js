@@ -66,37 +66,60 @@
     movedThisTurn:          {},  // cardId → bool  (Magellan, per-turn reset)
     aiMovedThisTurn:        {},
     moveLog:                [],  // player moves this turn [{cardId,fromLocId,toLocId,toSlotIndex,ipModAdded,isColumbus,queued}]
-    playerActionLog:        []   // ordered: {type:'play'|'move', cardId, fromLocId?, fromSlotIndex?, toLocId?}
+    playerActionLog:        [],  // ordered: {type:'play'|'move', cardId, fromLocId?, fromSlotIndex?, toLocId?}
+    locationSnapshots:      {},  // locId → slot-array copy taken at first queueMove from that loc
+    reservedSlotsPerLoc:    {},  // locId → count of snap-back slots reserved (one per queued move FROM that loc)
+    deferredPlays:          {}   // locId → [slotData] new plays that couldn't fit at snap-back; inserted after queued card moves away
   };
 
   /* ── Drag state ──────────────────────────────────────────────── */
   var dragInfo = null;
 
-  /* ── Background music ────────────────────────────────────────── */
-  var _bgMusic = null;
-  var _bgMusicVol  = 0.10;  // persists across Play Again
-  var _bgMusicMuted = false;
+  /* ── Background music playlist ───────────────────────────────── */
+  var _musicTracks = [
+    { src: 'music/Cupids Revenge.mp3',     name: 'Cupids Revenge' },
+    { src: 'music/Crossing the Chasm.mp3', name: 'Crossing the Chasm' },
+    { src: 'music/Mountain Emperor.mp3',   name: 'Mountain Emperor' },
+    { src: 'music/Thinking Music.mp3',     name: 'Thinking Music' },
+    { src: 'music/Floating Cities.mp3',    name: 'Floating Cities' },
+    { src: 'music/Crusade.mp3',            name: 'Crusade' },
+    { src: 'music/Home Base Groove.mp3',   name: 'Home Base Groove' }
+  ];
+  var _musicIdx   = 0;
+  var _musicHowl  = null;
+  var _bgMusicVol = 0.10;  // persists across Play Again
 
-  function getBgMusic() {
-    if (!_bgMusic && typeof Howl !== 'undefined') {
-      _bgMusic = new Howl({
-        src:    ['music/Dozing Off INSTRUMENTAL.m4a'],
-        loop:   true,
-        volume: _bgMusicVol,
-        html5:  true
-      });
-    }
-    return _bgMusic;
+  function _musicUpdateUI() {
+    var nameEl  = document.getElementById('music-track-name');
+    var playBtn = document.getElementById('music-play-btn');
+    if (nameEl)  nameEl.textContent  = _musicTracks[_musicIdx].name;
+    if (playBtn) playBtn.textContent = (_musicHowl && _musicHowl.playing()) ? '\u258c\u258c' : '\u25b6';
+  }
+
+  function _musicLoadTrack(idx, autoplay) {
+    if (_musicHowl) { _musicHowl.stop(); _musicHowl.unload(); _musicHowl = null; }
+    _musicIdx = ((idx % _musicTracks.length) + _musicTracks.length) % _musicTracks.length;
+    if (typeof Howl === 'undefined') { _musicUpdateUI(); return; }
+    _musicHowl = new Howl({
+      src:    [_musicTracks[_musicIdx].src],
+      volume: _bgMusicVol,
+      html5:  true,
+      onend:  function () { _musicLoadTrack(_musicIdx + 1, true); },
+      onplay: function () { _musicUpdateUI(); },
+      onpause: function () { _musicUpdateUI(); },
+      onstop: function () { _musicUpdateUI(); }
+    });
+    if (autoplay) _musicHowl.play();
+    _musicUpdateUI();
   }
 
   function startBgMusic() {
-    var m = getBgMusic();
-    if (!m) return;
-    if (!m.playing()) { m.volume(_bgMusicVol); m.play(); }
+    _musicLoadTrack(0, true);
   }
 
   function stopBgMusic() {
-    if (_bgMusic && _bgMusic.playing()) { _bgMusic.stop(); }
+    if (_musicHowl) { _musicHowl.stop(); _musicHowl.unload(); _musicHowl = null; }
+    _musicUpdateUI();
   }
 
   /* ── DOM refs ────────────────────────────────────────────────── */
@@ -157,6 +180,9 @@
     G.aiMovedThisTurn        = {};
     G.moveLog                = [];
     G.playerActionLog        = [];
+    G.locationSnapshots      = {};
+    G.reservedSlotsPerLoc    = {};
+    G.deferredPlays          = {};
     dragInfo = null;
 
     window.setPlayerHand(G.playerHand, G.playerDeck.length);
@@ -296,7 +322,7 @@
       if (!col) { clearDragOver(); return; }
       var locId      = parseInt(col.dataset.locId, 10);
       var card       = CARDS.find(function (c) { return c.id === dragInfo.cardId; });
-      var firstEmpty = G.playerSlots[locId].indexOf(null);
+      var firstEmpty   = G.playerSlots[locId].indexOf(null);
       if (!card || firstEmpty === -1 || effectiveCost(card, locId) > G.capital) { clearDragOver(); return; }
       // FIRST_CARD_HERE: first play on Turn 1 must go to the Great Rift Valley
       var riftLoc = G.locations.find(function (l) { return l.abilityKey === 'FIRST_CARD_HERE'; });
@@ -313,10 +339,12 @@
     if (dragInfo.source === 'move' && G.phase === 'select') {
       var col = e.target.closest('.battle-card-slot[data-owner="player"]');
       if (!col) { clearDragOver(); return; }
-      var toLocId    = parseInt(col.dataset.locId, 10);
+      var toLocId      = parseInt(col.dataset.locId, 10);
       if (toLocId === dragInfo.fromLocId) { clearDragOver(); return; }
-      var firstEmpty = G.playerSlots[toLocId].indexOf(null);
-      if (firstEmpty === -1) { clearDragOver(); return; }
+      var firstEmpty   = G.playerSlots[toLocId].indexOf(null);
+      var availForMove = G.playerSlots[toLocId].filter(function (s) { return s === null; }).length
+                       - (G.reservedSlotsPerLoc[toLocId] || 0);
+      if (firstEmpty === -1 || availForMove <= 0) { clearDragOver(); return; }
       // CULTURAL_FREE_MOVE_HERE: Cultural cards (not Magellan/Columbus) can only move to Timbuktu
       var movingCard  = CARDS.find(function (c) { return c.id === dragInfo.cardId; });
       var timbuktuLoc = G.locations.find(function (l) { return l.abilityKey === 'CULTURAL_FREE_MOVE_HERE'; });
@@ -386,7 +414,7 @@
     var cost = effectiveCost(card, locId);
     if (cost > G.capital) { var d = getSlotEl('player', locId, 0); if (d) flashDeny(d); return; }
     var si = G.playerSlots[locId].indexOf(null);
-    if (si === -1) return;
+    if (si === -1) { var d2 = getSlotEl('player', locId, 0); if (d2) flashDeny(d2); return; }
     // FIRST_CARD_HERE: first play on Turn 1 must go to the Great Rift Valley
     var riftLoc = G.locations.find(function (l) { return l.abilityKey === 'FIRST_CARD_HERE'; });
     if (riftLoc && G.turn === 1 && G.playerRevealQueue.length === 0 && locId !== riftLoc.id) {
@@ -425,8 +453,99 @@
     updateHeader();
   }
 
+  /**
+   * Snap back all queued-move previews to their true origin slots.
+   * Called at the start of every reveal phase AND from resetTurn.
+   *
+   * After this call:
+   *   - Every queued card is back at its snapshot-position in fromLocId (face-up)
+   *   - Cards that compacted during selection are back at their original slots
+   *   - Newly played (face-down) cards are in the remaining null slots
+   *   - locationSnapshots and reservedSlotsPerLoc are cleared
+   */
+  function snapBack() {
+    var queued = G.moveLog.filter(function (mv) { return mv.queued; });
+    if (!queued.length) return;
+
+    // Step 1: remove every preview card from its destination location
+    var toSeen = {};
+    queued.forEach(function (mv) {
+      var idx = G.playerSlots[mv.toLocId].findIndex(function (s) { return s && s.cardId === mv.cardId; });
+      if (idx !== -1) {
+        G.playerSlots[mv.toLocId][idx] = null;
+        clearSlotDOM('player', mv.toLocId, idx);
+      }
+      toSeen[mv.toLocId] = true;
+    });
+    // Compact + sync destination locations
+    Object.keys(toSeen).forEach(function (idStr) {
+      var lid = parseInt(idStr, 10);
+      compactPlayerSlots(lid);
+      syncPlayerSlots(lid);
+    });
+
+    // Step 2: restore each fromLocation from its snapshot, placing new plays in remaining null slots
+    var fromSeen = {};
+    queued.forEach(function (mv) { fromSeen[mv.fromLocId] = true; });
+    Object.keys(fromSeen).forEach(function (idStr) {
+      var lid      = parseInt(idStr, 10);
+      var snapshot = G.locationSnapshots[lid];
+      if (!snapshot) return;
+
+      // New plays are unrevealed cards NOT present in the snapshot
+      var snapIds  = snapshot.filter(Boolean).map(function (s) { return s.cardId; });
+      var newPlays = [];
+      G.playerSlots[lid].forEach(function (s) {
+        if (s && !s.revealed && snapIds.indexOf(s.cardId) === -1) newPlays.push(s);
+      });
+
+      // Restore snapshot (same object references — card data unchanged)
+      G.playerSlots[lid] = snapshot.slice();
+
+      // Append new plays into remaining null slots (in order).
+      // If the snapshot was full (e.g. all 4 slots were revealed cards and one
+      // queued away), there may not be room for all new plays yet.  Any that
+      // don't fit are stored as deferredPlays and inserted after the queued
+      // card animates away during the reveal sequence.
+      for (var i = 0; i < G.playerSlots[lid].length && newPlays.length; i++) {
+        if (G.playerSlots[lid][i] === null) G.playerSlots[lid][i] = newPlays.shift();
+      }
+      if (newPlays.length > 0) {
+        G.deferredPlays[lid] = newPlays;
+      }
+
+      syncPlayerSlots(lid);
+    });
+
+    // Clear reservation / snapshot state
+    G.locationSnapshots     = {};
+    G.reservedSlotsPerLoc   = {};
+  }
+
   function resetTurn() {
-    // 1. Return face-down (played-but-not-revealed) cards back to hand
+    // 1. Reset move-tracking flags for any queued moves
+    G.moveLog.forEach(function (mv) {
+      if (mv.queued) {
+        G.movedThisTurn[mv.cardId] = false;
+        if (mv.isColumbus) G.columbusMoved = false;
+      }
+    });
+
+    // 2. Snap queued-move previews back to their origin slots
+    snapBack();
+
+    // 3. Return any deferred new plays (didn't fit at snap-back) to hand
+    Object.keys(G.deferredPlays).forEach(function (lidStr) {
+      var lid = parseInt(lidStr, 10);
+      G.deferredPlays[lid].forEach(function (sd) {
+        var card = CARDS.find(function (c) { return c.id === sd.cardId; });
+        if (card) G.capital += effectiveCost(card, lid);
+        G.playerHand.push(sd.cardId);
+      });
+    });
+    G.deferredPlays = {};
+
+    // 4. Return face-down (played-but-not-revealed) cards back to hand
     G.locations.forEach(function (loc) {
       for (var i = 0; i < SLOTS_PER_LOC; i++) {
         var sd = G.playerSlots[loc.id][i];
@@ -439,85 +558,11 @@
       compactPlayerSlots(loc.id);
       syncPlayerSlots(loc.id);
     });
+
     G.capital           = Math.min(G.capital, G.turnStartCapital);
     G.playerRevealQueue = [];
-
-    // 2. Undo or clear queued moves from this select phase
-    for (var mi = G.moveLog.length - 1; mi >= 0; mi--) {
-      var mv = G.moveLog[mi];
-
-      if (mv.queued) {
-        // Card is currently at toLocId (the preview destination) — move it back
-        var qCurrIdx = G.playerSlots[mv.toLocId].findIndex(function (s) { return s && s.cardId === mv.cardId; });
-        if (qCurrIdx !== -1) {
-          var qSd = G.playerSlots[mv.toLocId][qCurrIdx];
-          G.playerSlots[mv.toLocId][qCurrIdx] = null;
-          clearSlotDOM('player', mv.toLocId, qCurrIdx);
-          compactPlayerSlots(mv.toLocId);
-          syncPlayerSlots(mv.toLocId);
-          var qOrigIdx = G.playerSlots[mv.fromLocId].indexOf(null);
-          if (qOrigIdx !== -1) {
-            G.playerSlots[mv.fromLocId][qOrigIdx] = qSd;
-          }
-          compactPlayerSlots(mv.fromLocId);
-          syncPlayerSlots(mv.fromLocId);
-        }
-        G.movedThisTurn[mv.cardId] = false;
-        if (mv.isColumbus) G.columbusMoved = false;
-        continue;
-      }
-
-      // Card actually moved (legacy path — shouldn't happen in select phase with new system)
-      // Find the card in its current (moved-to) location
-      var currIdx = G.playerSlots[mv.toLocId].findIndex(function (s) { return s && s.cardId === mv.cardId; });
-      if (currIdx === -1) continue;
-      var sdMv = G.playerSlots[mv.toLocId][currIdx];
-
-      // Reverse the ipMod added by this move
-      sdMv.ipMod = (sdMv.ipMod || 0) - mv.ipModAdded;
-      if (sdMv.ipModSources && mv.ipModSourcesAdded) {
-        mv.ipModSourcesAdded.forEach(function (entry) {
-          var idx = sdMv.ipModSources.findIndex(function (e) {
-            return e.source === entry.source && e.delta === entry.delta;
-          });
-          if (idx !== -1) sdMv.ipModSources.splice(idx, 1);
-        });
-      }
-
-      // Undo Columbus -1 penalty on opponent's Cultural cards
-      if (mv.isColumbus && G.columbusMoved) {
-        G.columbusMoved = false;
-        G.aiSlots[mv.toLocId].forEach(function (s) {
-          if (!s) return;
-          var c = CARDS.find(function (x) { return x.id === s.cardId; });
-          if (c && c.type === 'Cultural') {
-            s.ipMod = (s.ipMod || 0) + 1;
-            if (s.ipModSources) {
-              var ci = s.ipModSources.findIndex(function (e) { return e.source === 'Christopher Columbus'; });
-              if (ci !== -1) s.ipModSources.splice(ci, 1);
-            }
-          }
-        });
-      }
-      G.movedThisTurn[mv.cardId] = false;
-
-      // Move the card back to its original location
-      G.playerSlots[mv.toLocId][currIdx] = null;
-      clearSlotDOM('player', mv.toLocId, currIdx);
-
-      var origIdx = G.playerSlots[mv.fromLocId].indexOf(null);
-      if (origIdx !== -1) {
-        G.playerSlots[mv.fromLocId][origIdx] = sdMv;
-      }
-    }
-    G.moveLog = [];
-    G.playerActionLog = [];
-
-    // Sync all locations after moves are undone
-    G.locations.forEach(function (loc) {
-      compactPlayerSlots(loc.id);
-      syncPlayerSlots(loc.id);
-    });
+    G.moveLog           = [];
+    G.playerActionLog   = [];
 
     window.setPlayerHand(G.playerHand, G.playerDeck.length);
     refreshHandIPDisplays();
@@ -992,7 +1037,9 @@
     if (G.phase !== 'select') return;
     var scandinaviaLoc   = G.locations.find(function (l) { return l.abilityKey === 'MILITARY_FREE_MOVE_AWAY'; });
     var timbuktuLoc      = G.locations.find(function (l) { return l.abilityKey === 'CULTURAL_FREE_MOVE_HERE'; });
-    var timbuktuHasSpace = timbuktuLoc && G.playerSlots[timbuktuLoc.id].indexOf(null) !== -1;
+    var timbuktuHasSpace = timbuktuLoc && (
+      G.playerSlots[timbuktuLoc.id].indexOf(null) !== -1
+    );
     G.locations.forEach(function (loc) {
       G.playerSlots[loc.id].forEach(function (s, si) {
         if (!s || !s.revealed) return;
@@ -1099,42 +1146,51 @@
 
   /**
    * Queue a player card movement during the select phase.
-   * The card moves immediately to the destination so the player can see it,
-   * with a pulsing border indicating it's queued (not yet permanent).
-   * On End Turn the reveal phase will snap it back then re-animate the move.
+   * The card immediately appears at its destination (face-up, with a pulsing
+   * gold border) so the player can see where it's going.  The origin slot is
+   * compacted so the next available slot opens up for new plays.
+   * At reveal-start, snapBack() restores every card to its true origin before
+   * executeMoveAnimated slides it in queue order.
    */
   function queueMove(fromLocId, fromSlotIndex, toLocId) {
     var sd = G.playerSlots[fromLocId][fromSlotIndex];
     if (!sd) return;
     var cardId = sd.cardId;
     var card   = CARDS.find(function (c) { return c.id === cardId; });
-    var toIndex = G.playerSlots[toLocId].indexOf(null);
-    if (toIndex === -1) return;
 
-    // Move card immediately to destination — visual preview, no IP mods applied yet
+    // Destination must have a non-reserved null slot
+    var toAvail = G.playerSlots[toLocId].filter(function (s) { return s === null; }).length
+                - (G.reservedSlotsPerLoc[toLocId] || 0);
+    if (toAvail <= 0) return;
+
+    // Snapshot fromLocId before removing the card (first queue from this loc only)
+    if (!G.locationSnapshots[fromLocId]) {
+      G.locationSnapshots[fromLocId] = G.playerSlots[fromLocId].slice();
+    }
+    // Reserve a snap-back slot so new plays can't overfill this location
+    G.reservedSlotsPerLoc[fromLocId] = (G.reservedSlotsPerLoc[fromLocId] || 0) + 1;
+
+    // Move card from origin to destination (show at destination during select phase)
     G.playerSlots[fromLocId][fromSlotIndex] = null;
     clearSlotDOM('player', fromLocId, fromSlotIndex);
     compactPlayerSlots(fromLocId);
     syncPlayerSlots(fromLocId);
 
-    G.playerSlots[toLocId][toIndex] = sd;
-    var toSlotEl = getSlotEl('player', toLocId, toIndex);
-    if (toSlotEl && card) {
-      toSlotEl.dataset.cardId = cardId;
-      toSlotEl.className      = 'battle-card-slot occupied face-up queued-move';
-      toSlotEl.removeAttribute('draggable');
-      buildCardFace(toSlotEl, card, effectiveIP(sd));
+    var toIdx = G.playerSlots[toLocId].indexOf(null);
+    G.playerSlots[toLocId][toIdx] = sd;
+    var destSlotEl = getSlotEl('player', toLocId, toIdx);
+    if (destSlotEl && card) {
+      destSlotEl.dataset.cardId = cardId;
+      destSlotEl.className      = 'battle-card-slot occupied face-up queued-dest';
+      destSlotEl.removeAttribute('draggable');
+      buildCardFace(destSlotEl, card, effectiveIP(sd));
     }
 
-    // Mark as moved so it can't be queued again this turn
     G.movedThisTurn[cardId] = true;
     if (cardId === 25) G.columbusMoved = true;
 
-    // Log to playerActionLog (ordered, for reveal sequence)
-    G.playerActionLog.push({ type: 'move', cardId: cardId, fromLocId: fromLocId, toLocId: toLocId });
-
-    // Log to moveLog (for resetTurn to undo the preview move)
-    G.moveLog.push({ cardId: cardId, fromLocId: fromLocId, toLocId: toLocId, queued: true, isColumbus: cardId === 25 });
+    G.playerActionLog.push({ type: 'move', cardId: cardId, fromLocId: fromLocId, fromSlotIndex: fromSlotIndex, toLocId: toLocId });
+    G.moveLog.push({ cardId: cardId, fromLocId: fromLocId, fromSlotIndex: fromSlotIndex, toLocId: toLocId, queued: true, isColumbus: cardId === 25 });
 
     refreshMoveableCards();
     updateScores();
@@ -1176,52 +1232,50 @@
   }
 
   /**
-   * Execute a queued move during the reveal phase.
-   * The card is currently at toLocId (the select-phase preview position).
-   * Step 1: snap it back to fromLocId instantly.
-   * Step 2: slide it from fromLocId → toLocId with GSAP, applying IP mods.
+   * Universal movement handler — called during the reveal phase for ALL card moves:
+   * player-queued moves (Magellan, Columbus, Scandinavia, Timbuktu, Cape), Empress Wu
+   * pushes, and any future movement mechanic.
+   *
+   * By the time this is called, snapBack() has already returned every queued card
+   * to its true origin slot, so the card is at fromLocId ready to slide.
+   *
+   * opts (optional):
+   *   sfxOnStart  — fn() called before the slide animation starts
+   *   onLand      — fn(sd, done) called after the slot data is committed; skips
+   *                 default Columbus/Magellan on-land behaviour when provided
    */
-  function executeMoveAnimated(owner, cardId, fromLocId, toLocId, done) {
+  function executeMoveAnimated(owner, cardId, fromLocId, toLocId, opts, done) {
+    // Support legacy two-arg call: executeMoveAnimated(..., done)
+    if (typeof opts === 'function') { done = opts; opts = {}; }
+    opts = opts || {};
+    done = done || function () {};
+
     var slots = owner === 'player' ? G.playerSlots : G.aiSlots;
     var card  = CARDS.find(function (c) { return c.id === cardId; });
 
-    // ── Step 1: snap back to fromLocId ───────────────────────────
-    // Card is currently at toLocId (preview position); find and remove it
-    var previewIdx = -1;
-    for (var pi = 0; pi < slots[toLocId].length; pi++) {
-      if (slots[toLocId][pi] && slots[toLocId][pi].cardId === cardId) { previewIdx = pi; break; }
+    // Find card at fromLocId by cardId (snapBack already placed it here)
+    var snapIdx = -1;
+    for (var fi = 0; fi < slots[fromLocId].length; fi++) {
+      if (slots[fromLocId][fi] && slots[fromLocId][fi].cardId === cardId) { snapIdx = fi; break; }
     }
-    if (previewIdx === -1) { done(); return; }
-
-    var sd = slots[toLocId][previewIdx];
-
-    // Remove queued-move indicator and pull card out of toLocId
-    var previewSlotEl = getSlotEl(owner, toLocId, previewIdx);
-    if (previewSlotEl) previewSlotEl.classList.remove('queued-move');
-    slots[toLocId][previewIdx] = null;
-    clearSlotDOM(owner, toLocId, previewIdx);
-    if (owner === 'player') { compactPlayerSlots(toLocId); syncPlayerSlots(toLocId); }
-    else                    { compactOppSlots(toLocId);    syncOppSlots(toLocId);    }
-
-    // Place card back at fromLocId (instant snap — no animation)
-    var snapIdx = slots[fromLocId].indexOf(null);
     if (snapIdx === -1) { done(); return; }
-    slots[fromLocId][snapIdx] = sd;
-    var fromSlotEl = getSlotEl(owner, fromLocId, snapIdx);
-    if (fromSlotEl && card) {
-      fromSlotEl.dataset.cardId = cardId;
-      fromSlotEl.className      = 'battle-card-slot occupied face-up';
-      fromSlotEl.removeAttribute('draggable');
-      buildCardFace(fromSlotEl, card, effectiveIP(sd));
-    }
 
-    // ── Step 2: slide fromLocId → toLocId ────────────────────────
+    var sd         = slots[fromLocId][snapIdx];
+    var fromSlotEl = getSlotEl(owner, fromLocId, snapIdx);
+    // Clear any queued-dest styling still on the slot (e.g. non-snapped-back cases)
+    if (fromSlotEl) fromSlotEl.classList.remove('queued-dest');
+
+    // ── Slide fromLocId → toLocId ─────────────────────────────────
     var toIndex  = slots[toLocId].indexOf(null);
     if (toIndex === -1) { done(); return; }
     var toSlotEl = getSlotEl(owner, toLocId, toIndex);
 
-    // Sailing SFX for Magellan
-    if (cardId === 24 && typeof SFX !== 'undefined') SFX.sailingSound();
+    // SFX at start of slide
+    if (opts.sfxOnStart) {
+      opts.sfxOnStart();
+    } else if (cardId === 24 && typeof SFX !== 'undefined') {
+      SFX.sailingSound();
+    }
 
     // Apply IP mods (Cape of Good Hope, Magellan +1)
     // Columbus -1 is applied in applyMove() after the slide completes
@@ -1275,6 +1329,9 @@
 
       refreshMoveableCards();
       updateScores();
+
+      // Custom on-land callback (e.g. Empress Wu routes through here)
+      if (opts.onLand) { opts.onLand(sd, done); return; }
 
       // Columbus: apply -1 IP, play bell, shake affected cards, then proceed
       if (cardId === 25) {
@@ -1366,6 +1423,7 @@
 
   function startReveal() {
     G.phase = 'reveal';
+    snapBack();            // Restore all queued cards to true origin slots
     refreshMoveableCards();
     updateHeader();
     revealNext(buildRevealSequence(), 0);
@@ -1433,6 +1491,20 @@
     var item = seq[i];
 
     var proceed = function () {
+      // After a queued player move, pop the next deferred new-play for that
+      // location into the now-available slot (one per move that leaves).
+      if (item.type === 'move' && item.owner === 'player') {
+        var deferred = G.deferredPlays[item.fromLocId];
+        if (deferred && deferred.length > 0) {
+          var sd = deferred.shift();
+          if (deferred.length === 0) delete G.deferredPlays[item.fromLocId];
+          var fsi = G.playerSlots[item.fromLocId].indexOf(null);
+          if (fsi !== -1) {
+            G.playerSlots[item.fromLocId][fsi] = sd;
+            syncPlayerSlots(item.fromLocId);
+          }
+        }
+      }
       evaluateContinuous();
       refreshSlotIPDisplays();
       refreshHandIPDisplays();
@@ -1442,7 +1514,7 @@
     };
 
     if (item.type === 'move') {
-      executeMoveAnimated(item.owner, item.cardId, item.fromLocId, item.toLocId, proceed);
+      executeMoveAnimated(item.owner, item.cardId, item.fromLocId, item.toLocId, item.opts || {}, proceed);
       return;
     }
 
@@ -1815,11 +1887,20 @@
     });
     if (!best) { done(); return; }
 
-    // Find destination BEFORE animation starts (null = no space → destroy instead)
+    // Find destination: prefer adjacent locations, but fall back to any other location
+    // with space so Wu never destroys when a push is possible anywhere on the board.
     var destLocId = null;
+    var oppDestSlots = oppSide === 'player' ? G.playerSlots : G.aiSlots;
+    // First pass: adjacent locations (preferred)
     for (var i = 0; i < adjLocs.length; i++) {
-      var ds = oppSide === 'player' ? G.playerSlots : G.aiSlots;
-      if (ds[adjLocs[i]].indexOf(null) !== -1) { destLocId = adjLocs[i]; break; }
+      if (oppDestSlots[adjLocs[i]].indexOf(null) !== -1) { destLocId = adjLocs[i]; break; }
+    }
+    // Second pass: any other location if no adjacent slot found
+    if (!destLocId) {
+      for (var j = 0; j < G.locations.length; j++) {
+        var lid = G.locations[j].id;
+        if (lid !== locId && oppDestSlots[lid].indexOf(null) !== -1) { destLocId = lid; break; }
+      }
     }
     var canPush = destLocId !== null;
 
@@ -1835,12 +1916,14 @@
     // ── No-GSAP fallback ─────────────────────────────────────────
     if (!wuEl || typeof gsap === 'undefined') {
       if (canPush) {
-        _wuCommitPush(oppSide, locId, best.cardId, destLocId);
+        executeMoveAnimated(oppSide, best.cardId, locId, destLocId, {}, function () {
+          updateScores(); evaluateContinuous(); refreshSlotIPDisplays(); done();
+        });
       } else {
         destroyCard(oppSide, locId, tgtIdx);
+        updateScores(); evaluateContinuous(); refreshSlotIPDisplays();
+        done();
       }
-      updateScores(); evaluateContinuous(); refreshSlotIPDisplays();
-      done();
       return;
     }
 
@@ -1886,36 +1969,19 @@
     tl.to(wuGhost, { x: flightX, y: flightY, scale: 1.18,
                      duration: 0.32, ease: 'power2.in' });
 
-    // At impact: play SFX, then push or destroy
+    // At impact: play SFX, then push (via universal handler) or destroy
     tl.call(function () {
       if (typeof SFX !== 'undefined') SFX.wuPunch();
 
       if (canPush) {
-        // ── Push path: commit state and fly target to destination ──
-        _wuCommitPush(oppSide, locId, best.cardId, destLocId);
-        if (destEl) gsap.set(destEl, { opacity: 0 });
-
-        if (tgtGhost) {
-          gsap.to(tgtGhost, {
-            x: flyDx, y: flyDy,
-            duration: 0.30, ease: 'power3.out',
-            onComplete: function () {
-              gsap.fromTo(tgtGhost,
-                { rotation: -10 },
-                { rotation: 0, duration: 0.42, ease: 'elastic.out(1.3, 0.4)',
-                  onComplete: function () {
-                    removeEl(tgtGhost);
-                    if (destEl) gsap.set(destEl, { clearProps: 'opacity' });
-                    tryComplete();
-                  }
-                }
-              );
-            }
-          });
-        } else {
-          if (destEl) gsap.set(destEl, { clearProps: 'opacity' });
+        // ── Push path: route through universal movement handler ──
+        // Hide the target's real slot so the ghost doesn't flicker against it
+        if (tgtEl) gsap.set(tgtEl, { opacity: 0 });
+        executeMoveAnimated(oppSide, best.cardId, locId, destLocId, {}, function () {
+          if (tgtEl) gsap.set(tgtEl, { clearProps: 'opacity' });
+          if (tgtGhost) { removeEl(tgtGhost); }
           tryComplete();
-        }
+        });
 
       } else {
         // ── Destroy path: no space to push — obliterate the card ──
@@ -1935,36 +2001,6 @@
     // Wu returns to her slot
     tl.to(wuGhost, { x: 0, y: 0, scale: 1.0,
                      duration: 0.28, ease: 'back.out(1.6)' });
-  }
-
-  /**
-   * Commit Empress Wu's push: remove target card from source, place at destination.
-   * Called both by the animated path and the no-GSAP fallback.
-   */
-  function _wuCommitPush(oppSide, srcLocId, cardId, destLocId) {
-    var srcSlots = oppSide === 'player' ? G.playerSlots : G.aiSlots;
-    var currIdx  = srcSlots[srcLocId].findIndex(function (s) { return s && s.cardId === cardId; });
-    if (currIdx === -1) return;
-    var sd = srcSlots[srcLocId][currIdx];
-    srcSlots[srcLocId][currIdx] = null;
-    clearSlotDOM(oppSide, srcLocId, currIdx);
-    if (oppSide === 'player') { compactPlayerSlots(srcLocId); syncPlayerSlots(srcLocId); }
-    else                      { compactOppSlots(srcLocId);    syncOppSlots(srcLocId);    }
-
-    var destSlots = oppSide === 'player' ? G.playerSlots : G.aiSlots;
-    var destIdx   = destSlots[destLocId].indexOf(null);
-    if (destIdx === -1) return;
-    destSlots[destLocId][destIdx] = sd;
-    var dl = G.locations.find(function (l) { return l.id === destLocId; });
-    if (dl && dl.abilityKey === 'MOVE_IN_GAINS_IP') addIPMod(sd, 1, 'The Cape of Good Hope');
-    var card      = CARDS.find(function (c) { return c.id === cardId; });
-    var destSlotEl = getSlotEl(oppSide, destLocId, destIdx);
-    if (destSlotEl && card) {
-      destSlotEl.dataset.cardId = cardId;
-      destSlotEl.className      = 'battle-card-slot occupied face-up';
-      destSlotEl.removeAttribute('draggable');
-      buildCardFace(destSlotEl, card, effectiveIP(sd));
-    }
   }
 
   function abilityPacal(owner, locId, done) {
@@ -2585,10 +2621,13 @@
     G.playerRevealQueue = [];
     G.aiRevealQueue     = [];
     G.playerFirst       = !G.playerFirst;
-    G.movedThisTurn     = {};
-    G.aiMovedThisTurn   = {};
-    G.moveLog           = [];
-    G.playerActionLog   = [];
+    G.movedThisTurn          = {};
+    G.aiMovedThisTurn        = {};
+    G.moveLog                = [];
+    G.playerActionLog        = [];
+    G.locationSnapshots      = {};
+    G.reservedSlotsPerLoc    = {};
+    G.deferredPlays          = {};
 
     G.playerDeck.splice(0, DRAW_PER_TURN).forEach(function (id) { G.playerHand.push(id); });
     G.aiDeck.splice(0, DRAW_PER_TURN).forEach(function (id) { G.aiHand.push(id); });
@@ -2877,44 +2916,36 @@
 
   /* ── Music control widget ────────────────────────────────────── */
   (function () {
-    var toggleBtn = document.getElementById('music-toggle-btn');
-    var slider    = document.getElementById('music-volume-slider');
-    if (!toggleBtn || !slider) return;
+    var prevBtn = document.getElementById('music-prev-btn');
+    var playBtn = document.getElementById('music-play-btn');
+    var nextBtn = document.getElementById('music-next-btn');
+    var slider  = document.getElementById('music-volume-slider');
+    if (!prevBtn || !playBtn || !nextBtn || !slider) return;
 
-    // Sync slider thumb to initial volume
     slider.value = Math.round(_bgMusicVol * 100);
 
-    toggleBtn.addEventListener('click', function () {
-      var m = getBgMusic();
-      _bgMusicMuted = !_bgMusicMuted;
-      if (_bgMusicMuted) {
-        toggleBtn.textContent = '♪';   // dimmed note = muted
-        toggleBtn.classList.add('muted');
-        if (m) m.volume(0);
+    prevBtn.addEventListener('click', function () {
+      _musicLoadTrack(_musicIdx - 1, true);
+    });
+
+    playBtn.addEventListener('click', function () {
+      if (!_musicHowl) { _musicLoadTrack(_musicIdx, true); return; }
+      if (_musicHowl.playing()) {
+        _musicHowl.pause();
       } else {
-        toggleBtn.textContent = '♫';
-        toggleBtn.classList.remove('muted');
-        if (m) m.volume(_bgMusicVol);
+        _musicHowl.volume(_bgMusicVol);
+        _musicHowl.play();
       }
+      _musicUpdateUI();
+    });
+
+    nextBtn.addEventListener('click', function () {
+      _musicLoadTrack(_musicIdx + 1, true);
     });
 
     slider.addEventListener('input', function () {
       _bgMusicVol = parseInt(slider.value, 10) / 100;
-      var m = getBgMusic();
-      if (!_bgMusicMuted && m) m.volume(_bgMusicVol);
-      // If volume dragged above 0 while muted, un-mute
-      if (_bgMusicVol > 0 && _bgMusicMuted) {
-        _bgMusicMuted = false;
-        toggleBtn.textContent = '♫';
-        toggleBtn.classList.remove('muted');
-        if (m) m.volume(_bgMusicVol);
-      }
-      // If dragged to 0, treat as muted
-      if (_bgMusicVol === 0) {
-        _bgMusicMuted = true;
-        toggleBtn.textContent = '♪';
-        toggleBtn.classList.add('muted');
-      }
+      if (_musicHowl) _musicHowl.volume(_bgMusicVol);
     });
   }());
 
