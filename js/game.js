@@ -213,9 +213,10 @@
     updateOppHand();
     capitalNumEl = document.getElementById('battle-capital-num');
 
-    endTurnBtn.textContent  = 'END TURN';
-    endTurnBtn.disabled     = false;
-    resetTurnBtn.disabled   = false;
+    endTurnBtn.textContent     = 'END TURN';
+    endTurnBtn.disabled        = false;
+    resetTurnBtn.disabled      = false;
+    resetTurnBtn.style.display = '';
     document.getElementById('btn-back-results').style.display = 'none';
 
     updateHeader();
@@ -3265,9 +3266,10 @@
     bindHandEvents();
     refreshMoveableCards();
 
-    endTurnBtn.textContent  = 'END TURN';
-    endTurnBtn.disabled     = false;
-    resetTurnBtn.disabled   = false;
+    endTurnBtn.textContent     = 'END TURN';
+    endTurnBtn.disabled        = false;
+    resetTurnBtn.disabled      = false;
+    resetTurnBtn.style.display = '';
     _startSelectionTimer();
 
     if (typeof Analytics !== 'undefined') Analytics.turnStarted();
