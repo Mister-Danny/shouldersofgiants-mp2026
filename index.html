@@ -34,8 +34,9 @@
       <div class="home-question">Are you ready to make history?</div>
       <nav class="home-nav">
         <button class="btn-snes btn-home-ready"  id="btn-ready">I'm Ready</button>
-        <button class="btn-snes btn-home-versus" id="btn-versus">&#9876; Versus Mode</button>
         <button class="btn-home-learn"           id="btn-learn">I'm Ready To Learn</button>
+        <button class="btn-snes btn-home-versus" id="btn-versus">&#9876; Versus Mode</button>
+        <button class="btn-home-about"           id="btn-about">About the Game</button>
       </nav>
     </div>
 
@@ -52,6 +53,83 @@
         </div>
       </div>
     </div>
+
+    <!-- First-load welcome popup ("Before You Begin") -->
+    <div id="welcome-backdrop" class="popup-backdrop">
+      <div class="card-popup welcome-popup">
+        <div class="popup-card-name">Before You Begin</div>
+        <div class="popup-divider"></div>
+        <div class="welcome-body">
+          <p><span class="welcome-title">Shoulders of Giants</span> is an educational strategy card game built by a middle school history teacher, designed as a fun, quick extension activity to engage students in critical thinking. Cards feature historical figures and concepts from middle school world history, creating a foundation of prior knowledge for teachers to build upon in the classroom.</p>
+          <p>The game saves your progress (deck builds, unlocks, settings) locally in your browser. Nothing is sent to a server.</p>
+          <p class="welcome-enjoy">Enjoy!</p>
+        </div>
+        <div class="popup-actions">
+          <span class="popup-hint"></span>
+          <button class="btn-snes btn-snes-close" id="welcome-dismiss">GOT IT</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════════════════════
+       ABOUT SCREEN — "About the Game" (linked from home)
+  ════════════════════════════════════════════════════════════════ -->
+  <div id="screen-about" class="screen">
+
+    <header class="about-header">
+      <button class="btn-back" id="about-back">&#8592; Home</button>
+      <span class="about-header-title">About</span>
+      <span class="about-header-spacer"></span>
+    </header>
+
+    <main class="about-main">
+      <div class="about-content">
+
+        <h1 class="about-title">About <span class="about-title-italic">Shoulders of Giants</span></h1>
+        <div class="about-title-divider"></div>
+
+        <section class="about-section">
+          <h2 class="about-section-heading">About the Game</h2>
+          <p><span class="about-italic">Shoulders of Giants</span> is a browser-based educational strategy card game built for use in middle school classrooms. Players build decks of historical figures and key terms drawn from world history curriculum, then spend capital to play cards and gain influence at three geographical locations. The mechanics reward students for discovering connections across eras and card types.</p>
+          <p>The game name comes from Isaac Newton's <span class="about-quote">&#8220;if I have seen further, it is by standing on the shoulders of giants.&#8221;</span> The idea that knowledge doesn't just appear out of thin air, but accumulates as prior knowledge across generations, isn't decorative; it's the game's central design principle both in mechanics and pedagogy.</p>
+        </section>
+
+        <section class="about-section">
+          <h2 class="about-section-heading">How It's Used</h2>
+          <p>The game is designed as a quick, repeatable extension activity. Individual games take 5&ndash;10 minutes and engage students in critical thinking, while creating a baseline of familiarity with names, concepts, and connections students will see in the standard curriculum. Used regularly, it gives a class a shared vocabulary of historical figures and a felt sense of how those figures relate to each other before formal study deepens that knowledge.</p>
+          <p>The deckbuilding layer specifically rewards strategic thinking through resource management, pattern recognition, and adaptive play against opponents with different decks. The pedagogical objective isn't a specific fact set; it's the cognitive habit of seeing history as a system of interacting people, ideas, and places.</p>
+        </section>
+
+        <section class="about-section">
+          <h2 class="about-section-heading">About the Designer</h2>
+          <p><span class="about-italic">Shoulders of Giants</span> was designed and developed by Daniel Shutler-Ojeda, a middle school history and video production teacher in the San Diego Unified School District. The game began as a physical card game prototype, which was then prototyped digitally with a college programmer, and was ultimately built into the version you're playing using AI-assisted coding tools. This development path was made possible by recent shifts in software tooling that lets practicing teachers build games to their classroom's actual needs, rather than waiting for studios or publishers to build for them.</p>
+        </section>
+
+        <section class="about-section">
+          <h2 class="about-section-heading">Get in Touch</h2>
+          <p>If you're an educator interested in using the game in your classroom, a researcher curious about the design, a fellow developer, or just want to share feedback &mdash; I'd love to hear from you.</p>
+          <p class="about-contact">Email:&nbsp;<a class="about-link" href="mailto:dshutler@gmail.com">dshutler@gmail.com</a></p>
+        </section>
+
+        <section class="about-section">
+          <h2 class="about-section-heading">Acknowledgments</h2>
+          <p>This game wouldn't exist without contributions from many sources:</p>
+          <ul class="about-list">
+            <li><strong>Music:</strong> Tracks by Kevin MacLeod (<a class="about-link" href="https://incompetech.com" target="_blank" rel="noopener noreferrer">incompetech.com</a>), licensed under Creative Commons Attribution 4.0.</li>
+            <li><strong>Music:</strong> &#8220;Dozing Off&#8221; composed by Tom Breyfogle (Birds In The Airport), used with permission.</li>
+            <li><strong>Sound effects:</strong> Sourced from Pixabay under the Pixabay Content License.</li>
+            <li><strong>Special thanks:</strong> To the students who have play tested the game; to Justin Berenbaum, iAsia Brown, Sara Roldan, and others for their guidance on the project's direction; and to my wife and daughter for supporting me on this journey.</li>
+          </ul>
+        </section>
+
+        <footer class="about-footer">
+          <span class="about-italic">Shoulders of Giants</span> &mdash; Meaningful Play 2026 Submission Build
+        </footer>
+
+      </div>
+    </main>
+
   </div>
 
   <!-- ═══════════════════════════════════════════════════════════════
@@ -1105,6 +1183,7 @@
   <script src="js/legend.js"></script>
   <script src="js/game.js"></script>
   <script src="js/bypass.js"></script>
+  <script src="js/welcome.js"></script>
 
 </body>
 </html>

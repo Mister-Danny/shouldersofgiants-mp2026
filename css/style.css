@@ -276,12 +276,12 @@ img    { display: block; }
 
 /* "I'm Ready" — purple SNES button */
 .btn-home-ready {
-  font-size: 38px;
-  padding: 14px 64px;
+  font-size: 28px;
+  padding: 12px 52px;
   background: #7a3aab;
   border: 3px solid #000;
   color: #fff;
-  box-shadow: 0 5px 0 #3e1a60, 0 6px 0 #000;
+  box-shadow: 0 4px 0 #3e1a60, 0 5px 0 #000;
   letter-spacing: 0.06em;
 }
 .btn-home-ready:hover {
@@ -290,23 +290,59 @@ img    { display: block; }
   color: #fff;
 }
 .btn-home-ready:active {
-  transform: translateY(5px);
+  transform: translateY(4px);
   box-shadow: 0 0 0 #3e1a60, 0 1px 0 #000;
+}
+
+/* Shared sizing: force all home buttons to identical width + height */
+.btn-home-ready,
+.btn-home-versus,
+.btn-home-learn,
+.btn-home-about {
+  width: 360px;
+  box-sizing: border-box;
+  text-align: center;
+  text-transform: uppercase;
+}
+
+/* "About the Game" — parchment/bronze theme to match the warm palette */
+.btn-home-about {
+  font-family: var(--font);
+  font-size: 28px;
+  padding: 12px 52px;
+  color: #e8c060;
+  background: #2a1608;
+  border: 3px solid #6a4418;
+  border-radius: 2px;
+  letter-spacing: 0.06em;
+  cursor: pointer;
+  text-shadow: 1px 1px 0 #000;
+  box-shadow: 0 4px 0 #1a0c04, 0 5px 0 #000;
+  transition: color 0.15s, border-color 0.15s, background 0.15s;
+}
+.btn-home-about:hover {
+  background: #3a200c;
+  border-color: #d4aa50;
+  color: #f0cf6c;
+}
+.btn-home-about:active {
+  transform: translateY(4px);
+  box-shadow: 0 0 0 #1a0c04, 0 1px 0 #000;
 }
 
 /* "I'm Ready To Learn" — secondary tutorial button */
 .btn-home-learn {
   font-family: var(--font);
-  font-size: 18px;
-  padding: 8px 40px;
+  font-size: 28px;
+  padding: 12px 52px;
   color: #a89cbc;
   background: #2e1a48;
-  border: 2px solid #4a3265;
+  border: 3px solid #4a3265;
   border-radius: 2px;
   letter-spacing: 0.06em;
   cursor: pointer;
   text-shadow: 1px 1px 0 #000;
-  box-shadow: 0 3px 0 #180e28, 0 4px 0 #000;
+  box-shadow: 0 4px 0 #180e28, 0 5px 0 #000;
   transition: color 0.15s, border-color 0.15s, background 0.15s;
 }
 .btn-home-learn:hover {
@@ -315,7 +351,7 @@ img    { display: block; }
   background: #3c2460;
 }
 .btn-home-learn:active {
-  transform: translateY(3px);
+  transform: translateY(4px);
   box-shadow: 0 0 0 #2a1a40, 0 1px 0 #000;
 }
 
@@ -899,6 +935,117 @@ img    { display: block; }
   font-size: 24px;
   padding: 10px 22px;
   flex-shrink: 0;
+}
+
+
+/* ══════════════════════════════════════════════════════════════════
+   WELCOME ("Before You Begin") POPUP — first-load only
+   Reskinned with the parchment/wood + bronze-gold palette used by
+   the home screen and deck builder, instead of the SNES neon palette.
+══════════════════════════════════════════════════════════════════ */
+
+/* Sepia-tinted backdrop — warmer than the default near-black/blue */
+#welcome-backdrop {
+  background: rgba(20, 10, 2, 0.82);
+}
+
+/* Dark-wood panel with bronze double-border (replaces the periwinkle ring) */
+.welcome-popup {
+  width: 760px;
+  max-width: 92vw;
+  padding: 26px 34px 24px;
+  /* Subtle vertical wood-grain gradient (warm dark browns) */
+  background:
+    repeating-linear-gradient(
+      0deg,
+      transparent 0px, transparent 6px,
+      rgba(0,0,0,0.10) 6px, rgba(0,0,0,0.10) 7px
+    ),
+    linear-gradient(180deg,
+      #2a1608 0%,
+      #3a200c 50%,
+      #2a1608 100%
+    );
+  /* Bronze inner border + dark gap + warm-bronze outer ring */
+  border: 3px solid #d4aa50;
+  box-shadow:
+    0 0 0 3px #1a0c04,                          /* dark gap            */
+    0 0 0 6px #6a4418,                          /* bronze-brown ring   */
+    0 0 0 7px #1a0c04,                          /* outermost dark edge */
+    inset 0 0 28px rgba(60, 30, 0, 0.55);       /* aged inner glow     */
+}
+
+/* Title bar — warm gold like the home screen title, not SNES neon */
+.welcome-popup .popup-card-name {
+  color: #e8c060;
+  text-shadow:
+    2px 2px 0 #000,
+    0 0 8px rgba(220, 170, 60, 0.35);
+  margin-bottom: 12px;
+}
+
+/* Bronze divider, no neon glow */
+.welcome-popup .popup-divider {
+  height: 2px;
+  background: linear-gradient(
+    to right,
+    transparent 0%,
+    rgba(180, 130, 40, 0.65) 18%,
+    #d4aa50 50%,
+    rgba(180, 130, 40, 0.65) 82%,
+    transparent 100%
+  );
+  box-shadow: none;
+  margin-bottom: 16px;
+}
+
+/* Body copy: cream-tinted off-white, generous line-height for readability */
+.welcome-body {
+  font-family: var(--font);
+  font-size: 22px;
+  color: #f3e6c4;
+  line-height: 1.55;
+  text-shadow: 1px 1px 0 #000;
+  margin-bottom: 6px;
+}
+.welcome-body p {
+  margin: 0 0 18px;
+}
+.welcome-body p:last-child {
+  margin-bottom: 0;
+}
+
+/* Italicized game title — warm gold accent, distinct from body text */
+.welcome-title {
+  font-style: italic;
+  color: #e8c060;
+  text-shadow: 1px 1px 0 #000, 0 0 6px rgba(220, 170, 60, 0.30);
+}
+
+/* Centered "Enjoy!" sign-off — bronze-gold accent */
+.welcome-enjoy {
+  text-align: center;
+  color: #e8c060;
+  letter-spacing: 0.08em;
+  margin-top: 6px;
+  text-shadow: 2px 2px 0 #000;
+}
+
+/* "GOT IT" button — re-tint to bronze so it reads as part of the parchment/wood
+   world instead of the cyan SNES default. Scoped to this popup only. */
+.welcome-popup .popup-actions .btn-snes {
+  background: #3a200c;
+  border-color: #d4aa50;
+  color: #f3e6c4;
+  box-shadow: 0 4px 0 #1a0c04, 0 5px 0 #000;
+}
+.welcome-popup .popup-actions .btn-snes:hover {
+  background: #4a2a10;
+  border-color: #f0cf6c;
+  color: #fff5d8;
+}
+.welcome-popup .popup-actions .btn-snes:active {
+  box-shadow: 0 0 0 #1a0c04, 0 1px 0 #000;
 }
 
 
@@ -6103,4 +6250,261 @@ body.tut-locked #battle-reset-turn {
     0 0 30px currentColor,
     0 2px 6px rgba(0, 0, 0, 0.8);
   letter-spacing: 0.04em;
+}
+
+
+/* ══════════════════════════════════════════════════════════════════
+   ABOUT SCREEN — "About the Game"
+   Full-screen page linked from the home menu. Wood-and-parchment
+   aesthetic to match the home/welcome modal palette.
+══════════════════════════════════════════════════════════════════ */
+
+#screen-about.active {
+  display: flex;
+  flex-direction: column;
+  position: absolute;
+  inset: 0;
+  /* Same wood-grain backdrop as the home screen */
+  background:
+    repeating-linear-gradient(
+      0deg,
+      transparent 0px, transparent 7px,
+      rgba(0,0,0,0.07) 7px, rgba(0,0,0,0.07) 8px
+    ),
+    repeating-linear-gradient(
+      0deg,
+      transparent             0px,  transparent             38px,
+      rgba(255,255,255,0.045) 38px, rgba(255,255,255,0.045) 42px,
+      transparent             42px, transparent             78px,
+      rgba(0,0,0,0.07)        78px, rgba(0,0,0,0.07)        82px
+    ),
+    linear-gradient(180deg,
+      #6e3e1a 0%,
+      #885028 18%,
+      #7a4822 36%,
+      #8e5a2e 54%,
+      #7a4822 72%,
+      #885028 90%,
+      #6e3e1a 100%
+    );
+}
+
+/* Sticky header — Back button stays reachable while scrolling */
+.about-header {
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 12px 22px;
+  background: linear-gradient(
+    180deg,
+    rgba(20, 10, 2, 0.92) 0%,
+    rgba(20, 10, 2, 0.78) 100%
+  );
+  border-bottom: 1px solid rgba(212, 170, 80, 0.45);
+  flex-shrink: 0;
+}
+.about-header-title {
+  flex: 1;
+  text-align: center;
+  font-family: var(--font);
+  font-size: 18px;
+  letter-spacing: 0.18em;
+  color: rgba(232, 192, 96, 0.85);
+  text-transform: uppercase;
+  text-shadow: 1px 1px 0 #000;
+}
+.about-header-spacer {
+  /* Mirrors the back button's footprint so the title stays optically centered */
+  width: 96px;
+  flex-shrink: 0;
+}
+
+/* Scrolling content region */
+.about-main {
+  flex: 1;
+  overflow-y: auto;
+  padding: 36px 24px 60px;
+  /* Keep custom scrollbar consistent with deck builder */
+  scrollbar-width: thin;
+  scrollbar-color: rgba(160, 110, 30, 0.60) rgba(20, 10, 2, 0.80);
+}
+.about-main::-webkit-scrollbar       { width: 8px; }
+.about-main::-webkit-scrollbar-track { background: rgba(20, 10, 2, 0.80); }
+.about-main::-webkit-scrollbar-thumb {
+  background: rgba(160, 110, 30, 0.60);
+  border: 1px solid rgba(100, 65, 10, 0.40);
+}
+.about-main::-webkit-scrollbar-thumb:hover { background: rgba(200, 150, 40, 0.80); }
+
+/* Centred parchment-inside-wood content panel */
+.about-content {
+  max-width: 760px;
+  margin: 0 auto;
+  padding: 38px 44px 36px;
+  background:
+    radial-gradient(ellipse at 94% 92%, rgba(100, 65, 10, 0.28) 0%, transparent 52%),
+    radial-gradient(ellipse at 8%  10%, rgba(140, 100, 30, 0.18) 0%, transparent 40%),
+    linear-gradient(180deg,
+      rgba(28, 14, 4, 0.94) 0%,
+      rgba(38, 22, 10, 0.94) 50%,
+      rgba(28, 14, 4, 0.94) 100%
+    );
+  border: 3px solid #d4aa50;
+  box-shadow:
+    0 0 0 3px #1a0c04,
+    0 0 0 6px #6a4418,
+    0 0 0 7px #1a0c04,
+    inset 0 0 36px rgba(60, 30, 0, 0.50);
+}
+
+/* Page title — largest element, warm gold with chunky pixel outline */
+.about-title {
+  font-family: var(--font);
+  font-size: 48px;
+  color: #e8c060;
+  text-align: center;
+  letter-spacing: 0.05em;
+  line-height: 1.15;
+  margin: 0;
+  font-weight: normal;
+  text-shadow:
+    3px 3px 0 #000,
+    -2px -2px 0 #000,
+    3px -2px 0 #000,
+    -2px 3px 0 #000,
+    0 0 12px rgba(220, 170, 60, 0.30);
+}
+.about-title-italic {
+  font-style: italic;
+}
+
+/* Bronze divider beneath the title */
+.about-title-divider {
+  height: 2px;
+  background: linear-gradient(
+    to right,
+    transparent 0%,
+    rgba(180, 130, 40, 0.55) 18%,
+    #d4aa50 50%,
+    rgba(180, 130, 40, 0.55) 82%,
+    transparent 100%
+  );
+  margin: 18px auto 32px;
+}
+
+/* Section blocks */
+.about-section {
+  margin-bottom: 30px;
+}
+.about-section:last-of-type {
+  margin-bottom: 18px;
+}
+
+/* Section headings — same treatment for every section */
+.about-section-heading {
+  font-family: var(--font);
+  font-size: 28px;
+  color: #e8c060;
+  letter-spacing: 0.06em;
+  margin: 0 0 14px;
+  font-weight: normal;
+  text-shadow: 2px 2px 0 #000;
+  border-bottom: 1px solid rgba(212, 170, 80, 0.32);
+  padding-bottom: 6px;
+}
+
+/* Body copy */
+.about-section p {
+  font-family: var(--font);
+  font-size: 18px;
+  color: #f3e6c4;
+  line-height: 1.6;
+  margin: 0 0 14px;
+  text-shadow: 1px 1px 0 #000;
+}
+.about-section p:last-child {
+  margin-bottom: 0;
+}
+
+/* Italicized game title (inline) */
+.about-italic {
+  font-style: italic;
+  color: #e8c060;
+}
+
+/* Newton quote — italic, slightly lighter gold so it stands apart from the .about-italic accent */
+.about-quote {
+  font-style: italic;
+  color: #f0d8a0;
+}
+
+/* Email + external links */
+.about-link {
+  color: #f4d678;
+  text-decoration: none;
+  border-bottom: 1px dashed rgba(244, 214, 120, 0.55);
+  transition: color 0.12s, border-bottom-color 0.12s;
+}
+.about-link:hover {
+  color: #fff5d8;
+  border-bottom-color: #fff5d8;
+}
+
+/* Acknowledgments list — diamond bullets in bronze, bolded labels in gold */
+.about-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+.about-list li {
+  font-family: var(--font);
+  font-size: 18px;
+  color: #f3e6c4;
+  line-height: 1.55;
+  margin: 0 0 16px;
+  padding-left: 22px;
+  position: relative;
+  text-shadow: 1px 1px 0 #000;
+}
+.about-list li:last-child { margin-bottom: 0; }
+.about-list li::before {
+  content: '\25C6';                  /* ◆ diamond */
+  position: absolute;
+  left: 0;
+  top: 0;
+  color: #d4aa50;
+  font-size: 14px;
+  line-height: 1.85;
+}
+.about-list strong {
+  color: #e8c060;
+  font-weight: normal;               /* CTGalbite is already chunky */
+  letter-spacing: 0.02em;
+}
+
+/* Footer — de-emphasized build info */
+.about-footer {
+  margin-top: 36px;
+  padding-top: 18px;
+  border-top: 1px solid rgba(212, 170, 80, 0.22);
+  text-align: center;
+  font-family: var(--font);
+  font-size: 14px;
+  color: rgba(243, 230, 196, 0.55);
+  text-shadow: 1px 1px 0 #000;
+  letter-spacing: 0.05em;
+}
+
+/* ── Mobile / small-screen tuning ──────────────────────────────── */
+@media (max-width: 768px) {
+  .about-main    { padding: 22px 12px 40px; }
+  .about-content { padding: 26px 22px 28px; }
+  .about-title   { font-size: 34px; }
+  .about-section-heading { font-size: 22px; }
+  .about-section p,
+  .about-list li { font-size: 16px; }
+  .about-header-title { font-size: 14px; }
 }

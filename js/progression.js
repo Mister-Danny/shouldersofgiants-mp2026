@@ -230,7 +230,7 @@ var Progression = (function () {
     }
 
     // ── Collect the 5 cards for this type ────────────────────────
-    var cards = CARDS.filter(function (c) { return c.type === type; });
+    var cards = CARDS.filter(function (c) { return c.type === type && !c.locked; });
     stage.innerHTML = '';
     titleEl.textContent = '';
 

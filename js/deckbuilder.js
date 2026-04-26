@@ -434,6 +434,21 @@
     }
   });
 
+  // "About the Game" — open the About screen, no music change
+  var btnAbout = document.getElementById('btn-about');
+  if (btnAbout) {
+    btnAbout.addEventListener('click', function () {
+      showScreen('screen-about');
+      // Reset scroll to top on every open
+      var aboutMain = document.querySelector('#screen-about .about-main');
+      if (aboutMain) aboutMain.scrollTop = 0;
+    });
+  }
+  var btnAboutBack = document.getElementById('about-back');
+  if (btnAboutBack) {
+    btnAboutBack.addEventListener('click', function () { showScreen('screen-home'); });
+  }
+
   // "I'm Ready To Learn" — always replays the full intro → video → tutorial flow
   document.getElementById('btn-learn').addEventListener('click', function () {
     window.multiplayerMode = false;

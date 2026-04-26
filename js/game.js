@@ -80,13 +80,9 @@
 
   /* ── Background music playlist ───────────────────────────────── */
   var _musicTracks = [
-    { src: 'music/Cupids Revenge.mp3',     name: 'Cupids Revenge' },
-    { src: 'music/Crossing the Chasm.mp3', name: 'Crossing the Chasm' },
-    { src: 'music/Mountain Emperor.mp3',   name: 'Mountain Emperor' },
-    { src: 'music/Thinking Music.mp3',     name: 'Thinking Music' },
-    { src: 'music/Floating Cities.mp3',    name: 'Floating Cities' },
-    { src: 'music/Crusade.mp3',            name: 'Crusade' },
-    { src: 'music/Home Base Groove.mp3',   name: 'Home Base Groove' }
+    { src: 'music/Cupids Revenge.mp3',     name: 'Cupids Revenge — Kevin MacLeod' },
+    { src: 'music/Crossing the Chasm.mp3', name: 'Crossing the Chasm — Kevin MacLeod' },
+    { src: 'music/Mountain Emperor.mp3',   name: 'Mountain Emperor — Kevin MacLeod' }
   ];
   var _musicIdx   = 0;
   var _musicHowl  = null;
@@ -1640,7 +1636,7 @@
         G[flag] = true;
         var oppSlots = owner === 'player' ? G.aiSlots : G.playerSlots;
         oppSlots[toLocId].forEach(function (s) {
-          if (!s) return;
+          if (!s || !s.revealed) return;
           var c = CARDS.find(function (x) { return x.id === s.cardId; });
           if (c && (c.type === 'Cultural' || c.type === 'Political')) addIPMod(s, -1, 'Christopher Columbus');
         });
@@ -1902,7 +1898,7 @@
         var affectedSlotEls = [];
 
         oppSlots[toLocId].forEach(function (s, si) {
-          if (!s) return;
+          if (!s || !s.revealed) return;
           var c = CARDS.find(function (x) { return x.id === s.cardId; });
           if (c && (c.type === 'Cultural' || c.type === 'Political')) {
             addIPMod(s, -1, 'Christopher Columbus');
@@ -2416,8 +2412,7 @@
       if (hEl) {
         if (cardId === 10) { jesusEl  = hEl; }  // hold for Jesus ascend animation
         else if (cardId === 7) { janHusEl = hEl; }  // hold for Jan Hus split animation
-        else if (typeof Anim !== 'undefined') { Anim.cardDiscarded(hEl); }
-        else               { hEl.remove(); }
+        else               { hEl.remove(); }    // other discards: silent removal (no generic animation)
       }
     } else {
       G.aiHand = G.aiHand.filter(function (id) { return id !== cardId; });
@@ -2439,30 +2434,27 @@
     var slots = owner === 'player' ? G.playerSlots : G.aiSlots;
     // Count revealed cards at this location, excluding Scholar-Officials (id 2) itself
     var count = slots[locId].filter(function (s) { return s && s.revealed && s.cardId !== 2; }).length;
-    if (owner === 'player') {
-      G.bonusCapitalNextTurn += count;
-      if (count > 0) {
-        var slotIdx = slots[locId].findIndex(function (s) { return s && s.cardId === 2; });
-        var slotEl  = slotIdx !== -1 ? getSlotEl('player', locId, slotIdx) : null;
-        if (typeof SFX  !== 'undefined') SFX.coinSound();
-        if (typeof Anim !== 'undefined' && slotEl) {
-          Anim.scholarPulse(slotEl);
-          Anim.floatCapital(slotEl, count);
-        }
-        // Pulse each contributing card so the player can see what's being counted
-        if (typeof Anim !== 'undefined') {
-          slots[locId].forEach(function (s, si) {
-            if (!s || !s.revealed || s.cardId === 2) return;
-            var contEl = getSlotEl('player', locId, si);
-            if (contEl) Anim.scholarPulse(contEl);
-          });
-        }
-        // Animations run ~1s — wait before signalling next card
-        setTimeout(done, 1050);
-        return;
+    if (owner === 'player') G.bonusCapitalNextTurn   += count;
+    else                    G.aiBonusCapitalNextTurn += count;
+    if (count > 0) {
+      var slotIdx = slots[locId].findIndex(function (s) { return s && s.cardId === 2; });
+      var slotEl  = slotIdx !== -1 ? getSlotEl(owner, locId, slotIdx) : null;
+      if (typeof SFX  !== 'undefined') SFX.coinSound();
+      if (typeof Anim !== 'undefined' && slotEl) {
+        Anim.scholarPulse(slotEl);
+        Anim.floatCapital(slotEl, count);
       }
-    } else {
-      G.aiBonusCapitalNextTurn += count;
+      // Pulse each contributing card so viewers can see what's being counted
+      if (typeof Anim !== 'undefined') {
+        slots[locId].forEach(function (s, si) {
+          if (!s || !s.revealed || s.cardId === 2) return;
+          var contEl = getSlotEl(owner, locId, si);
+          if (contEl) Anim.scholarPulse(contEl);
+        });
+      }
+      // Animations run ~1s — wait before signalling next card
+      setTimeout(done, 1050);
+      return;
     }
     done();
   }
@@ -2698,6 +2690,7 @@
     if (owner === 'opp') {
       // AI: discard a random hand card
       if (G.aiHand.length > 0) {
+        if (typeof SFX !== 'undefined') SFX.erasmusSound();
         var pick = G.aiHand[Math.floor(Math.random() * G.aiHand.length)];
         discardFromHand('opp', pick);
       }
