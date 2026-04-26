@@ -135,7 +135,7 @@ var SFX = (function () {
     if (typeof Howl === 'undefined') return null;
     if (!_cortesHowl) {
       _cortesHowl = new Howl({
-        src:    ['sfx/Cortes - You Are Nothing.m4a'],
+        src:    ['sfx/cortes-destroy.mp3'],
         volume: 1.0,
         html5:  true
       });
@@ -147,7 +147,7 @@ var SFX = (function () {
     if (typeof Howl === 'undefined') return null;
     if (!_deflateHowl) {
       _deflateHowl = new Howl({
-        src:    ['sfx/Deflate.wav'],
+        src:    ['sfx/cortes-deflate.mp3'],
         volume: 1.0,
         html5:  true
       });
@@ -159,7 +159,7 @@ var SFX = (function () {
     if (typeof Howl === 'undefined') return null;
     if (!_joanHowl) {
       _joanHowl = new Howl({
-        src:    ['sfx/Rise Up Fight.m4a'],
+        src:    ['sfx/joan-warhorn.mp3'],
         volume: 1.0,
         html5:  true
       });
@@ -171,7 +171,7 @@ var SFX = (function () {
     if (typeof Howl === 'undefined') return null;
     if (!_williamHowl) {
       _williamHowl = new Howl({
-        src:    ['sfx/Good FG.m4a'],
+        src:    ['sfx/william-mine.mp3'],
         volume: 1.0,
         html5:  true
       });
@@ -183,7 +183,7 @@ var SFX = (function () {
     if (typeof Howl === 'undefined') return null;
     if (!_samuraiHowl) {
       _samuraiHowl = new Howl({
-        src:    ["sfx/I'm Back.m4a"],
+        src:    ["sfx/samurai-rise.mp3"],
         volume: 1.0,
         html5:  true
       });
@@ -195,7 +195,7 @@ var SFX = (function () {
     if (typeof Howl === 'undefined') return null;
     if (!_coinHowl) {
       _coinHowl = new Howl({
-        src:    ['sfx/Coin.m4a'],
+        src:    ['sfx/scholar-officials-coin.mp3'],
         volume: 1.0,
         html5:  true
       });
@@ -207,7 +207,7 @@ var SFX = (function () {
     if (typeof Howl === 'undefined') return null;
     if (!_pacalHowl) {
       _pacalHowl = new Howl({
-        src:   ['sfx/Do It Again.m4a'],
+        src:   ['sfx/pacal-rewind.mp3'],
         volume: 1.0,
         html5:  true
       });
@@ -219,7 +219,7 @@ var SFX = (function () {
     if (typeof Howl === 'undefined') return null;
     if (!_wuHowl) {
       _wuHowl = new Howl({
-        src:    ['sfx/Empress_Wu_mixdown.wav'],
+        src:    ['sfx/empresswu-push.mp3'],
         volume: 1.0,
         html5:  true
       });
@@ -231,7 +231,7 @@ var SFX = (function () {
     if (typeof Howl === 'undefined') return null;
     if (!_erasmusHowl) {
       _erasmusHowl = new Howl({
-        src:   ['sfx/Dude_Abides.m4a'],
+        src:   ['sfx/erasmus-noyield.mp3'],
         volume: 1.0,
         html5:  true
       });
@@ -242,7 +242,7 @@ var SFX = (function () {
   function henryHowl() {
     if (typeof Howl === 'undefined') return null;
     if (!_henryHowl) {
-      _henryHowl = new Howl({ src: ['sfx/thank-you-for-your-patronage.mp3'], volume: 1.0, html5: true });
+      _henryHowl = new Howl({ src: ['sfx/henrynav-watermoney.mp3'], volume: 1.0, html5: true });
     }
     return _henryHowl;
   }
@@ -250,7 +250,7 @@ var SFX = (function () {
   function zhengheHowl() {
     if (typeof Howl === 'undefined') return null;
     if (!_zhengheHowl) {
-      _zhengheHowl = new Howl({ src: ['sfx/zhenghebump.m4a'], volume: 1.0, html5: true });
+      _zhengheHowl = new Howl({ src: ['sfx/zhenghe-bubble.mp3'], volume: 1.0, html5: true });
     }
     return _zhengheHowl;
   }
@@ -258,7 +258,7 @@ var SFX = (function () {
   function sailingHowl() {
     if (typeof Howl === 'undefined') return null;
     if (!_sailingHowl) {
-      _sailingHowl = new Howl({ src: ['sfx/sailing.m4a'], volume: 1.0, html5: true });
+      _sailingHowl = new Howl({ src: ['sfx/boat-waves.mp3'], volume: 1.0, html5: true });
     }
     return _sailingHowl;
   }
@@ -266,7 +266,7 @@ var SFX = (function () {
   function columbusHowl() {
     if (typeof Howl === 'undefined') return null;
     if (!_columbusHowl) {
-      _columbusHowl = new Howl({ src: ['sfx/old-church-bell-meme.mp3'], volume: 1.0, html5: true });
+      _columbusHowl = new Howl({ src: ['sfx/columbus-churchbell.mp3'], volume: 1.0, html5: true });
     }
     return _columbusHowl;
   }
@@ -274,7 +274,7 @@ var SFX = (function () {
   function voltaireHowl() {
     if (typeof Howl === 'undefined') return null;
     if (!_voltaireHowl) {
-      _voltaireHowl = new Howl({ src: ['sfx/memyselfandi.m4a'], volume: 1.0, html5: true });
+      _voltaireHowl = new Howl({ src: ['sfx/voltaire-break.mp3'], volume: 1.0, html5: true });
     }
     return _voltaireHowl;
   }
@@ -283,7 +283,7 @@ var SFX = (function () {
     if (typeof Howl === 'undefined') return null;
     if (!_francisHowl) {
       _francisHowl = new Howl({
-        src:   ['sfx/MO MONEY - FRANCIS.m4a'],
+        src:   ['sfx/francis-prayer.mp3'],
         volume: 1.0,
         html5:  true
       });
@@ -295,7 +295,7 @@ var SFX = (function () {
     if (typeof Howl === 'undefined') return null;
     if (!_justinianHowl) {
       _justinianHowl = new Howl({
-        src:    ['sfx/AnimeSwordShing_3.wav'],
+        src:    ['sfx/justinian-reset.mp3'],
         volume: 1.0,
         html5:  true
       });
@@ -306,7 +306,7 @@ var SFX = (function () {
   function kenteHowl() {
     if (typeof Howl === 'undefined') return null;
     if (!_kenteHowl) {
-      _kenteHowl = new Howl({ src: ['sfx/shieldspell.m4a'], volume: 1.0, html5: true });
+      _kenteHowl = new Howl({ src: ['sfx/kente-shield.mp3'], volume: 1.0, html5: true });
     }
     return _kenteHowl;
   }
@@ -314,7 +314,7 @@ var SFX = (function () {
   function juvenalHowl() {
     if (typeof Howl === 'undefined') return null;
     if (!_juvenalHowl) {
-      _juvenalHowl = new Howl({ src: ['sfx/laughter.m4a'], volume: 1.0, html5: true });
+      _juvenalHowl = new Howl({ src: ['sfx/juvenal-laugh.mp3'], volume: 1.0, html5: true });
     }
     return _juvenalHowl;
   }
@@ -322,7 +322,7 @@ var SFX = (function () {
   function cosimoHowl() {
     if (typeof Howl === 'undefined') return null;
     if (!_cosimoHowl) {
-      _cosimoHowl = new Howl({ src: ['sfx/moneybags.m4a'], volume: 1.0, html5: true });
+      _cosimoHowl = new Howl({ src: ['sfx/demedici-money.mp3'], volume: 1.0, html5: true });
     }
     return _cosimoHowl;
   }
@@ -331,7 +331,7 @@ var SFX = (function () {
     if (typeof Howl === 'undefined') return null;
     if (!_jesusHowl) {
       _jesusHowl = new Howl({
-        src:    ['sfx/Jesus Christ Superstar.m4a'],
+        src:    ['sfx/jesus-resurrect.mp3'],
         volume: 1.0,
         html5:  true,     // stream rather than buffer the whole file
         onend: function () {
@@ -462,7 +462,7 @@ var SFX = (function () {
     cortesCharge: function () {
       var howl = cortesHowl();
       if (howl) { howl.stop(); howl.play(); return; }
-      try { new Audio('sfx/Cortes - You Are Nothing.m4a').play(); } catch (e) {}
+      try { new Audio('sfx/cortes-destroy.mp3').play(); } catch (e) {}
     },
 
     /** Calls cb() once Cortes's audio finishes (or immediately if it's not playing). */
@@ -473,54 +473,54 @@ var SFX = (function () {
     },
 
     /**
-     * William the Conqueror gains IP — plays "Good FG.m4a" on every card destruction.
+     * William the Conqueror gains IP — plays "william-mine.mp3" on every card destruction.
      * Exempt from mute so it fires live during Cortes's animation sequence.
      */
     williamGain: function () {
       var howl = williamHowl();
       if (howl) { howl.stop(); howl.play(); return; }
-      try { new Audio('sfx/Good FG.m4a').play(); } catch (e) {}
+      try { new Audio('sfx/william-mine.mp3').play(); } catch (e) {}
     },
 
-    /** Samurai returns — plays "I'm Back.m4a" (fire-and-forget) */
+    /** Samurai returns — plays "samurai-rise.mp3" (fire-and-forget) */
     samuraiReturn: function () {
       var howl = samuraiHowl();
       if (howl) { howl.stop(); howl.play(); return; }
-      try { new Audio("sfx/I'm Back.m4a").play(); } catch (e) {}
+      try { new Audio("sfx/samurai-rise.mp3").play(); } catch (e) {}
     },
 
-    /** Joan of Arc ability — plays "Rise Up Fight.m4a" (fire-and-forget) */
+    /** Joan of Arc ability — plays "joan-warhorn.mp3" (fire-and-forget) */
     joanRise: function () {
       var howl = joanHowl();
       if (howl) { howl.stop(); howl.play(); return; }
-      try { new Audio('sfx/Rise Up Fight.m4a').play(); } catch (e) {}
+      try { new Audio('sfx/joan-warhorn.mp3').play(); } catch (e) {}
     },
 
-    /** Scholar-Officials ability — plays Coin.m4a */
+    /** Scholar-Officials ability — plays scholar-officials-coin.mp3 */
     coinSound: function () {
       if (_muted) return;
       var howl = coinHowl();
       if (howl) { howl.stop(); howl.play(); return; }
-      try { new Audio('sfx/Coin.m4a').play(); } catch (e) {}
+      try { new Audio('sfx/scholar-officials-coin.mp3').play(); } catch (e) {}
     },
 
-    /** Pacal the Great ability — plays Do It Again.m4a */
+    /** Pacal the Great ability — plays pacal-rewind.mp3 */
     pacalSound: function () {
       if (_muted) return;
       var howl = pacalHowl();
       if (howl) { howl.stop(); howl.play(); return; }
-      try { new Audio('sfx/Do It Again.m4a').play(); } catch (e) {}
+      try { new Audio('sfx/pacal-rewind.mp3').play(); } catch (e) {}
     },
 
-    /** Erasmus ability — plays Dude_Abides.m4a when the discard chooser opens */
+    /** Erasmus ability — plays erasmus-noyield.mp3 when the discard chooser opens */
     erasmusSound: function () {
       var howl = erasmusHowl();
       if (howl) { howl.stop(); howl.play(); return; }
-      try { new Audio('sfx/Dude_Abides.m4a').play(); } catch (e) {}
+      try { new Audio('sfx/erasmus-noyield.mp3').play(); } catch (e) {}
     },
 
     /**
-     * Francis of Assisi ability — plays MO MONEY - FRANCIS.m4a.
+     * Francis of Assisi ability — plays francis-prayer.mp3.
      * @param {Function} [callback]  Called when the track ends (or immediately on fallback).
      */
     francisSound: function (callback) {
@@ -531,18 +531,18 @@ var SFX = (function () {
         howl.play();
         return;
       }
-      try { new Audio('sfx/MO MONEY - FRANCIS.m4a').play(); } catch (e) {}
+      try { new Audio('sfx/francis-prayer.mp3').play(); } catch (e) {}
       if (callback) setTimeout(callback, 800);
     },
 
-    /** Jan Hus ability — plays If You Strike Me Down.m4a */
+    /** Jan Hus ability — plays janhus-firebell.mp3 */
     janHusSplit: function () {
       if (_muted) return;
       if (!_janHusHowl && typeof Howl !== 'undefined') {
-        _janHusHowl = new Howl({ src: ['sfx/If You Strike Me Down.m4a'], volume: 1.0, html5: true });
+        _janHusHowl = new Howl({ src: ['sfx/janhus-firebell.mp3'], volume: 1.0, html5: true });
       }
       if (_janHusHowl) { _janHusHowl.stop(); _janHusHowl.play(); return; }
-      try { new Audio('sfx/If You Strike Me Down.m4a').play(); } catch (e) {}
+      try { new Audio('sfx/janhus-firebell.mp3').play(); } catch (e) {}
     },
 
     /** Empress Wu ability — plays Empress Wu_mixdown.wav */
@@ -550,22 +550,22 @@ var SFX = (function () {
       if (_muted) return;
       var howl = wuHowl();
       if (howl) { howl.stop(); howl.play(); return; }
-      try { new Audio('sfx/Empress_Wu_mixdown.wav').play(); } catch (e) {}
+      try { new Audio('sfx/empresswu-push.mp3').play(); } catch (e) {}
     },
 
-    /** Justinian ability — plays AnimeSwordShing_3.wav */
+    /** Justinian ability — plays justinian-reset.mp3 */
     justinianShing: function () {
       if (_muted) return;
       var howl = justinianHowl();
       if (howl) { howl.stop(); howl.play(); return; }
-      try { new Audio('sfx/AnimeSwordShing_3.wav').play(); } catch (e) {}
+      try { new Audio('sfx/justinian-reset.mp3').play(); } catch (e) {}
     },
 
     /** Cortes blocked — plays deflate sfx (fire-and-forget) */
     cortesDeflate: function () {
       var howl = deflateHowl();
       if (howl) { howl.stop(); howl.play(); return; }
-      try { new Audio('sfx/Deflate.wav').play(); } catch (e) {}
+      try { new Audio('sfx/cortes-deflate.mp3').play(); } catch (e) {}
     },
 
     /** Kente revealed — shield spell chime */
@@ -573,7 +573,7 @@ var SFX = (function () {
       if (_muted) return;
       var howl = kenteHowl();
       if (howl) { howl.stop(); howl.play(); return; }
-      try { new Audio('sfx/shieldspell.m4a').play(); } catch (e) {}
+      try { new Audio('sfx/kente-shield.mp3').play(); } catch (e) {}
     },
 
     /** Juvenal revealed / penalising a card — laughter sfx */
@@ -581,7 +581,7 @@ var SFX = (function () {
       if (_muted) return;
       var howl = juvenalHowl();
       if (howl) { howl.stop(); howl.play(); return; }
-      try { new Audio('sfx/laughter.m4a').play(); } catch (e) {}
+      try { new Audio('sfx/juvenal-laugh.mp3').play(); } catch (e) {}
     },
 
     /** Cosimo de'Medici revealed — money-bags sfx */
@@ -589,7 +589,7 @@ var SFX = (function () {
       if (_muted) return;
       var howl = cosimoHowl();
       if (howl) { howl.stop(); howl.play(); return; }
-      try { new Audio('sfx/moneybags.m4a').play(); } catch (e) {}
+      try { new Audio('sfx/demedici-money.mp3').play(); } catch (e) {}
     },
 
     /** Henry the Navigator revealed — "thank you for your patronage" */
@@ -597,23 +597,23 @@ var SFX = (function () {
       if (_muted) return;
       var howl = henryHowl();
       if (howl) { howl.stop(); howl.play(); return; }
-      try { new Audio('sfx/thank-you-for-your-patronage.mp3').play(); } catch (e) {}
+      try { new Audio('sfx/henrynav-watermoney.mp3').play(); } catch (e) {}
     },
 
-    /** Zheng He ability fires — plays zhenghebump when cards are boosted */
+    /** Zheng He ability fires — plays zhenghe-bubble when cards are boosted */
     zhengheSound: function () {
       if (_muted) return;
       var howl = zhengheHowl();
       if (howl) { howl.stop(); howl.play(); return; }
-      try { new Audio('sfx/zhenghebump.m4a').play(); } catch (e) {}
+      try { new Audio('sfx/zhenghe-bubble.mp3').play(); } catch (e) {}
     },
 
-    /** Magellan moves — plays sailing.m4a */
+    /** Magellan moves — plays boat-waves.mp3 */
     sailingSound: function () {
       if (_muted) return;
       var howl = sailingHowl();
       if (howl) { howl.stop(); howl.play(); return; }
-      try { new Audio('sfx/sailing.m4a').play(); } catch (e) {}
+      try { new Audio('sfx/boat-waves.mp3').play(); } catch (e) {}
     },
 
     /** Voltaire ability activates (+4 bonus as sole card) */
@@ -621,7 +621,7 @@ var SFX = (function () {
       if (_muted) return;
       var howl = voltaireHowl();
       if (howl) { howl.stop(); howl.play(); return; }
-      try { new Audio('sfx/memyselfandi.m4a').play(); } catch (e) {}
+      try { new Audio('sfx/voltaire-break.mp3').play(); } catch (e) {}
     },
 
     /** Columbus arrives at a location with Cultural cards — plays church bell */
@@ -629,7 +629,7 @@ var SFX = (function () {
       if (_muted) return;
       var howl = columbusHowl();
       if (howl) { howl.stop(); howl.play(); return; }
-      try { new Audio('sfx/old-church-bell-meme.mp3').play(); } catch (e) {}
+      try { new Audio('sfx/columbus-churchbell.mp3').play(); } catch (e) {}
     },
 
     /**
@@ -654,7 +654,7 @@ var SFX = (function () {
       }
       // Fallback: Howler not loaded — use raw Audio element
       try {
-        var audio = new Audio('sfx/Jesus Christ Superstar.m4a');
+        var audio = new Audio('sfx/jesus-resurrect.mp3');
         audio.volume = 1.0;
         if (onFinished) {
           audio.addEventListener('ended', function () { setTimeout(onFinished, 500); });
