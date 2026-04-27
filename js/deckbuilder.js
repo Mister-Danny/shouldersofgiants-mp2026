@@ -545,12 +545,10 @@
     if (e.target === this) this.classList.remove('visible');
   });
 
-  /* ── Returning-visitor skip ──────────────────────────────────── */
-  // Tutorial complete → skip Lucy + video, go straight to deck builder.
-  if (localStorage.getItem('sog_tutorial_complete')) {
-    showScreen('screen-deckbuilder');
-    initDeckBuilder();
-    playDeckMusic();
-  }
+  // Page always lands on the home screen (the HTML default is
+  // <div id="screen-home" class="screen active">). Returning players
+  // still skip the Lucy intro + video — that's handled inside the
+  // "I'm Ready" handler via the sog_tutorial_complete flag — but the
+  // initial landing is now always Home, regardless of prior progress.
 
 })();
