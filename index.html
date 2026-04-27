@@ -151,16 +151,26 @@
   <div id="screen-deckbuilder" class="screen">
 
     <header class="db-header">
-      <div class="db-header-left">
+
+      <!-- Top row: Home · Title/Subtitle · Counter + Let's Play -->
+      <div class="db-header-row db-header-row-top">
         <button class="btn-back" id="db-back">&#8592; Home</button>
-        <button class="btn-watch-intro" id="db-watch-intro">&#9654; Watch Intro</button>
+        <div class="db-title-block">
+          <h2 class="db-title">Deck Builder</h2>
+          <div class="db-subtitle">Double-click a card to add or remove</div>
+        </div>
+        <div class="db-header-right">
+          <span class="db-counter" id="db-counter">0 / 15</span>
+          <div class="db-play-wrap">
+            <button class="btn-save" id="db-save" disabled>Let's Play</button>
+            <span class="db-save-hint" id="db-save-hint">Deck must have 15 cards to play</span>
+          </div>
+        </div>
       </div>
-      <h2 class="db-title">Deck Builder</h2>
-      <div class="db-controls">
-        <button class="btn-snes btn-deselect-all" id="btn-deselect-all">Deselect All</button>
-        <span class="db-counter" id="db-counter">0 / 15</span>
-        <button class="btn-save" id="db-save" disabled>Let's Play</button>
-      </div>
+
+      <!-- Bottom row: deck slot selector (slot cards injected by JS) -->
+      <nav class="db-slot-row" id="db-slot-row" aria-label="Deck slots"></nav>
+
     </header>
 
     <!-- Card grid — injected by deckbuilder.js -->
@@ -187,6 +197,25 @@
       </div>
     </div>
 
+    <!-- ── Rename Deck modal ────────────────────────────────────── -->
+    <div id="rename-deck-backdrop" class="popup-backdrop">
+      <div class="card-popup rename-deck-popup">
+        <div class="popup-card-name">Rename Deck</div>
+        <div class="popup-divider"></div>
+        <div class="rename-deck-body">
+          <input type="text" id="rename-deck-input" class="rename-deck-input"
+                 maxlength="20" autocomplete="off" spellcheck="false">
+          <div class="rename-deck-counter">
+            <span id="rename-deck-counter-num">0</span> / 20
+          </div>
+        </div>
+        <div class="popup-actions">
+          <button class="btn-snes btn-snes-close" id="rename-deck-cancel">CANCEL</button>
+          <button class="btn-snes" id="rename-deck-save">SAVE</button>
+        </div>
+      </div>
+    </div>
+
     <!-- ── Card Detail Popup — SNES dialogue box style ─────────── -->
     <!-- Clicking the backdrop (outside the panel) closes it       -->
     <div id="card-popup-backdrop" class="popup-backdrop">
@@ -203,7 +232,7 @@
 
         <!-- Double-click hint + close button -->
         <div class="popup-actions">
-          <span class="popup-hint">DOUBLE-CLICK CARD TO ADD / REMOVE</span>
+          <span class="popup-hint"></span>
           <button class="btn-snes btn-snes-close" id="popup-close-btn">CLOSE</button>
         </div>
 
@@ -1161,6 +1190,9 @@
     <!-- Toast notification -->
     <div id="bypass-toast" class="bypass-toast"></div>
   </div>
+
+  <!-- ── Multi-deck save layer (must load before any deck consumer) ── -->
+  <script src="js/decks.js"></script>
 
   <!-- ── Analytics (Firebase must be loaded above in <head>) ───── -->
   <script src="js/analytics.js"></script>

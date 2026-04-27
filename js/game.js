@@ -28,7 +28,7 @@
   const SLOTS_PER_LOC = 4;
   const REVEAL_DELAY  = 800;
   const POST_REVEAL   = 1200;
-  const STORAGE_KEY   = 'sog_saved_deck';
+  // Active deck IDs come from window.Decks (multi-slot save layer).
   const TYPE_ORDER    = ['Political','Religious','Military','Cultural','Exploration'];
 
   /* ── Game state ──────────────────────────────────────────────── */
@@ -167,8 +167,7 @@
       : pickLocations();
     window.initBattleUI(G.locations);
 
-    var saved   = localStorage.getItem(STORAGE_KEY);
-    var deckIds = saved ? JSON.parse(saved) : [];
+    var deckIds = (window.Decks && window.Decks.getActiveCards()) || [];
     G.playerDeck = shuffle(deckIds.slice());
     G.playerHand = G.playerDeck.splice(0, HAND_START);
 

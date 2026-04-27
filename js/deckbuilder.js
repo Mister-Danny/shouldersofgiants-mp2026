@@ -2,62 +2,131 @@
  * deckbuilder.js
  * Shoulders of Giants — Deck Builder Module
  *
+ * Multi-deck support:
+ *   The active deck is whichever slot is currently selected in
+ *   window.Decks. All add/remove/rename operations auto-save through
+ *   that module — there is no Save button.
+ *
  * Card interactions:
- *   Single click  → opens read-only SNES ability popup
- *   Double click  → toggles card in/out of deck + shows flash feedback
+ *   Single click  → opens read-only ability popup
+ *   Double click  → toggles card in/out of active slot's deck
  *
- * Card tile display:
- *   - Full-bleed PNG filling the slot
- *   - CC (top-left)  : large CT Galbite, white @ 75% opacity
- *   - IP (top-right) : large CT Galbite, black with white outline
- *   - "IN DECK" badge fades in at bottom when selected
+ * Slot row interactions:
+ *   Click slot card        → switches active slot (re-renders grid + counter)
+ *   Click pencil icon      → opens Rename Deck modal
  *
- * Popup is read-only — ability name + text only, no add/remove buttons.
- * Dismiss with CLOSE button, Escape key, or clicking the backdrop.
- *
- * Depends on: CARDS (js/cards.js), showScreen() (index.html)
+ * Depends on: window.Decks (js/decks.js), CARDS (js/cards.js),
+ *             showScreen() (index.html)
  */
 
 (function () {
   'use strict';
 
   /* ── Constants ───────────────────────────────────────────────── */
-  const DECK_SIZE   = 15;
-  const STORAGE_KEY = 'sog_saved_deck';
-  const TYPE_ORDER  = ['Political', 'Religious', 'Military', 'Cultural', 'Exploration', 'Scientific'];
+  var DECK_SIZE  = (window.Decks && window.Decks.DECK_SIZE) || 15;
+  var SLOT_COUNT = (window.Decks && window.Decks.SLOT_COUNT) || 3;
+  var TYPE_ORDER = ['Political', 'Religious', 'Military', 'Cultural', 'Exploration', 'Scientific'];
 
   /* ── State ───────────────────────────────────────────────────── */
-  const _stored   = localStorage.getItem(STORAGE_KEY);
-  let selectedIds = _stored ? new Set(JSON.parse(_stored)) : new Set();
-  let popupCardId = null; // ID of card currently shown in popup
+  var popupCardId = null;       // ID of card currently shown in popup
+  var renameSlot  = null;       // slot currently being renamed (1/2/3)
 
   /* ── DOM refs ────────────────────────────────────────────────── */
-  const mainEl    = document.getElementById('db-main');
-  const counterEl = document.getElementById('db-counter');
-  const saveBtn   = document.getElementById('db-save');
-  const backBtn   = document.getElementById('db-back');
-  const toastEl   = document.getElementById('save-toast');
+  var mainEl    = document.getElementById('db-main');
+  var counterEl = document.getElementById('db-counter');
+  var saveBtn   = document.getElementById('db-save');
+  var saveHint  = document.getElementById('db-save-hint');
+  var backBtn   = document.getElementById('db-back');
+  var slotRowEl = document.getElementById('db-slot-row');
 
-  // Popup (read-only: name + ability only)
-  const backdropEl      = document.getElementById('card-popup-backdrop');
-  const popupNameEl     = document.getElementById('popup-name');
-  const popupAbilNameEl = document.getElementById('popup-ability-name');
-  const popupAbilTextEl = document.getElementById('popup-ability-text');
-  const popupCloseBtn   = document.getElementById('popup-close-btn');
+  // Card-detail popup (read-only)
+  var backdropEl      = document.getElementById('card-popup-backdrop');
+  var popupNameEl     = document.getElementById('popup-name');
+  var popupAbilNameEl = document.getElementById('popup-ability-name');
+  var popupAbilTextEl = document.getElementById('popup-ability-text');
+  var popupCloseBtn   = document.getElementById('popup-close-btn');
+
+  // Rename modal
+  var renameBackdrop  = document.getElementById('rename-deck-backdrop');
+  var renameInput     = document.getElementById('rename-deck-input');
+  var renameCounter   = document.getElementById('rename-deck-counter-num');
+  var renameSaveBtn   = document.getElementById('rename-deck-save');
+  var renameCancelBtn = document.getElementById('rename-deck-cancel');
+
+  /* ── Selection helpers (delegate to Decks) ───────────────────── */
+
+  function isSelected(cardId)    { return window.Decks.hasCard(cardId); }
+  function activeCards()         { return window.Decks.getActiveCards(); }
+  function activeCardCount()     { return activeCards().length; }
 
   /* ── Entry point ─────────────────────────────────────────────── */
+
   function initDeckBuilder() {
-    // Filter out any saved cards that belong to locked types
+    // Drop any saved cards in any slot that belong to locked types now
     if (typeof Progression !== 'undefined') {
       var unlocked = Progression.getUnlockedTypes();
-      selectedIds.forEach(function (id) {
+      window.Decks.filterAllCards(function (id) {
         var card = CARDS.find(function (c) { return c.id === id; });
-        if (card && unlocked.indexOf(card.type) === -1) selectedIds.delete(id);
+        return !card || unlocked.indexOf(card.type) !== -1;
       });
     }
+    renderSlotRow();
     renderAllGroups();
     updateUI();
     mainEl.scrollTop = 0;
+  }
+
+  /* ── Slot row rendering ──────────────────────────────────────── */
+
+  function renderSlotRow() {
+    if (!slotRowEl) return;
+    slotRowEl.innerHTML = '';
+    var active = window.Decks.getActiveSlot();
+    for (var slot = 1; slot <= SLOT_COUNT; slot++) {
+      slotRowEl.appendChild(buildSlotCard(slot, slot === active));
+    }
+  }
+
+  function buildSlotCard(slot, isActive) {
+    var deck = window.Decks.getDeck(slot);
+    var el = document.createElement('div');
+    el.className = 'db-slot-card' + (isActive ? ' active' : '');
+    el.dataset.slot = String(slot);
+
+    var name = document.createElement('span');
+    name.className = 'db-slot-name';
+    name.textContent = deck.name;
+
+    var edit = document.createElement('button');
+    edit.className = 'db-slot-edit';
+    edit.type = 'button';
+    edit.setAttribute('aria-label', 'Rename ' + deck.name);
+    edit.innerHTML = '✎'; // pencil ✎
+
+    // Whole card switches active slot (except clicks on the pencil)
+    el.addEventListener('click', function (e) {
+      if (e.target.closest('.db-slot-edit')) return; // pencil handles itself
+      switchToSlot(slot);
+    });
+
+    // Pencil opens rename modal
+    edit.addEventListener('click', function (e) {
+      e.stopPropagation();
+      openRenameModal(slot);
+    });
+
+    el.appendChild(name);
+    el.appendChild(edit);
+    return el;
+  }
+
+  function switchToSlot(slot) {
+    if (slot === window.Decks.getActiveSlot()) return;
+    window.Decks.setActiveSlot(slot);
+    // Full re-render so all "selected" / "in-deck" states reflect the new slot
+    renderSlotRow();
+    renderAllGroups();
+    updateUI();
   }
 
   /* ── Rendering ───────────────────────────────────────────────── */
@@ -84,11 +153,11 @@
         if (type === 'Religious') {
           var sw = typeof Progression !== 'undefined' ? Progression.getSerfWins() : 0;
           var remaining = 3 - sw;
-          hint = '\uD83D\uDD12 Unlocks with ' + remaining + ' More Win' + (remaining !== 1 ? 's' : '') + ' Against the Serf';
+          hint = '🔒 Unlocks with ' + remaining + ' More Win' + (remaining !== 1 ? 's' : '') + ' Against the Serf';
         } else if (type === 'Exploration') {
           var gw = typeof Progression !== 'undefined' ? Progression.getGiantWins() : 0;
           var remaining2 = 3 - gw;
-          hint = '\uD83D\uDD12 Unlocks with ' + remaining2 + ' More Win' + (remaining2 !== 1 ? 's' : '') + ' Against the Giant';
+          hint = '🔒 Unlocks with ' + remaining2 + ' More Win' + (remaining2 !== 1 ? 's' : '') + ' Against the Giant';
         }
         headerHTML += '<span class="db-type-lock-badge">' + hint + '</span>';
       }
@@ -104,21 +173,14 @@
     });
   }
 
-  /**
-   * buildCardEl(card)
-   * Full-bleed PNG tile with CC / IP overlays.
-   *
-   * Single click → openPopup (read-only ability view)
-   * Double click → toggleCard + flashCard
-   */
   function buildCardEl(card, locked) {
     var el = document.createElement('div');
     el.className = 'db-card type-' + card.type.toLowerCase() +
-                   (selectedIds.has(card.id) ? ' selected' : '') +
+                   (isSelected(card.id) ? ' selected' : '') +
                    (locked ? ' db-card-locked' : '');
     el.dataset.id = card.id;
 
-    // ── Full-bleed image ──
+    // Image + overlays
     var imgWrap = document.createElement('div');
     imgWrap.className = 'db-card-img-wrap';
 
@@ -135,17 +197,14 @@
     imgWrap.appendChild(ph);
     imgWrap.appendChild(img);
 
-    // ── CC — top-left, large, white 75% ──
     var ccEl = document.createElement('div');
     ccEl.className = 'db-overlay-cc';
     ccEl.textContent = card.cc;
 
-    // ── IP — top-right, large, black + white outline ──
     var ipEl = document.createElement('div');
     ipEl.className = 'db-overlay-ip';
     ipEl.textContent = card.ip;
 
-    // ── "IN DECK" badge ──
     var badge = document.createElement('div');
     badge.className = 'db-card-in-deck';
     badge.textContent = 'IN DECK';
@@ -155,43 +214,37 @@
     el.appendChild(ipEl);
     el.appendChild(badge);
 
-    // ── Lock overlay for locked cards ──
     if (locked) {
       var lockOverlay = document.createElement('div');
       lockOverlay.className = 'db-card-lock-overlay';
       var lockIcon = document.createElement('span');
       lockIcon.className = 'lock-icon';
-      lockIcon.textContent = '\uD83D\uDD12';
+      lockIcon.textContent = '🔒';
       lockOverlay.appendChild(lockIcon);
       el.appendChild(lockOverlay);
     }
 
-    // ── Click handler — distinguishes single vs double click ─────
+    // Single vs double-click distinction
     var clickTimer = null;
     var DBLCLICK_MS = 350;
 
     el.addEventListener('click', function () {
       if (locked) {
-        // Locked cards: single click opens grayscale popup, no double-click
         openPopup(card, true);
         return;
       }
 
       if (clickTimer) {
-        // ── Second click arrived within the window → double-click ──
         clearTimeout(clickTimer);
         clickTimer = null;
-
-        var wasSelected = selectedIds.has(card.id);
+        var wasSelected = isSelected(card.id);
         var ok = toggleCard(card.id);
         if (ok) {
-          flashCard(el, !wasSelected); // green pulse = added, dim = removed
+          flashCard(el, !wasSelected);
         } else {
-          flashCounter();              // deck full — flash the counter
+          flashCounter();
         }
-
       } else {
-        // ── First click → start window; fire popup if no second click ──
         clickTimer = setTimeout(function () {
           clickTimer = null;
           openPopup(card);
@@ -205,27 +258,25 @@
   /* ── Selection logic ─────────────────────────────────────────── */
 
   /**
-   * toggleCard(id)
-   * Adds or removes a card from selectedIds.
-   * Returns false (and does nothing) when trying to add beyond DECK_SIZE.
+   * Adds or removes the card from the active slot.
+   * Returns false (and does nothing) when trying to add beyond DECK_SIZE
+   * or when the card type is locked.
    */
   function toggleCard(id) {
-    // Block locked card types
     if (typeof Progression !== 'undefined') {
       var card = CARDS.find(function (c) { return c.id === id; });
       if (card && !Progression.isTypeUnlocked(card.type)) return false;
     }
-    if (selectedIds.has(id)) {
-      selectedIds.delete(id);
-      setCardSelected(id, false);
-      updateUI();
-      return true;
+    var ok;
+    if (isSelected(id)) {
+      ok = window.Decks.removeCard(id);
+      if (ok) setCardSelected(id, false);
+    } else {
+      ok = window.Decks.addCard(id);
+      if (ok) setCardSelected(id, true);
     }
-    if (selectedIds.size >= DECK_SIZE) return false;
-    selectedIds.add(id);
-    setCardSelected(id, true);
-    updateUI();
-    return true;
+    if (ok) updateUI();
+    return ok;
   }
 
   function setCardSelected(id, on) {
@@ -235,31 +286,12 @@
 
   /* ── Visual feedback ─────────────────────────────────────────── */
 
-  /**
-   * flashCard(el, wasAdded)
-   * Plays a brief CSS animation on the card tile so the player can
-   * see the double-click registered.
-   *   wasAdded = true  → green pulse  (card entered deck)
-   *   wasAdded = false → dim fade-out (card left deck)
-   */
   function flashCard(el, wasAdded) {
     var cls = wasAdded ? 'flash-add' : 'flash-remove';
     el.classList.remove('flash-add', 'flash-remove');
-    void el.offsetWidth; // restart animation if triggered twice quickly
+    void el.offsetWidth;
     el.classList.add(cls);
     setTimeout(function () { el.classList.remove(cls); }, 400);
-  }
-
-  /* ── UI state ────────────────────────────────────────────────── */
-
-  function updateUI() {
-    var count = selectedIds.size;
-    counterEl.textContent = count + ' / ' + DECK_SIZE;
-    counterEl.classList.toggle('complete', count === DECK_SIZE);
-    saveBtn.disabled    = count !== DECK_SIZE;
-    saveBtn.textContent = window.versusStudentMode ? 'Lock In Deck'
-                        : window.multiplayerMode    ? 'Enter Lobby'
-                        : "Let's Play";
   }
 
   function flashCounter() {
@@ -269,18 +301,23 @@
     setTimeout(function () { counterEl.classList.remove('flash'); }, 460);
   }
 
+  /* ── UI state ────────────────────────────────────────────────── */
+
+  function updateUI() {
+    var count = activeCardCount();
+    counterEl.textContent = count + ' / ' + DECK_SIZE;
+    counterEl.classList.toggle('complete', count === DECK_SIZE);
+    saveBtn.disabled    = count !== DECK_SIZE;
+    saveBtn.textContent = window.versusStudentMode ? 'Lock In Deck'
+                        : window.multiplayerMode    ? 'Enter Lobby'
+                        : "Let's Play";
+  }
+
   /* ── Popup (read-only ability viewer) ────────────────────────── */
 
-  /**
-   * openPopup(card)
-   * Shows the SNES dialogue box with the card's ability name + text.
-   * No selection buttons — this is a read-only reference view.
-   */
   function openPopup(card, isLocked) {
     popupCardId = card.id;
-
     popupNameEl.textContent = card.name;
-
     if (card.ability) {
       popupAbilNameEl.textContent = card.abilityName;
       popupAbilNameEl.style.display = '';
@@ -291,7 +328,6 @@
       popupAbilTextEl.textContent   = 'No special ability.';
       popupAbilTextEl.className     = 'popup-ability-text vanilla';
     }
-
     backdropEl.classList.toggle('popup-locked', !!isLocked);
     backdropEl.classList.add('visible');
   }
@@ -301,7 +337,35 @@
     popupCardId = null;
   }
 
-  /* ── Persistence ─────────────────────────────────────────────── */
+  /* ── Rename modal ────────────────────────────────────────────── */
+
+  function openRenameModal(slot) {
+    var deck = window.Decks.getDeck(slot);
+    if (!deck) return;
+    renameSlot = slot;
+    renameInput.value = deck.name;
+    renameCounter.textContent = renameInput.value.length;
+    renameBackdrop.classList.add('visible');
+    // Focus + select the text on next tick so the popup transition completes
+    setTimeout(function () {
+      renameInput.focus();
+      renameInput.select();
+    }, 30);
+  }
+
+  function closeRenameModal() {
+    renameBackdrop.classList.remove('visible');
+    renameSlot = null;
+  }
+
+  function commitRename() {
+    if (renameSlot === null) return;
+    window.Decks.rename(renameSlot, renameInput.value);
+    renderSlotRow(); // re-render shows the new name
+    closeRenameModal();
+  }
+
+  /* ── Persistence (now thin — Decks owns it) ──────────────────── */
 
   // Deck-select background music (Howler for reliable cross-browser playback)
   var _deckHowl = null;
@@ -333,18 +397,15 @@
   var diffBackdropEl = document.getElementById('difficulty-backdrop');
 
   function openDifficultyModal() {
-    if (selectedIds.size !== DECK_SIZE) return;
+    if (activeCardCount() !== DECK_SIZE) return;
     if (window.versusStudentMode) {
-      var ids = Array.from(selectedIds);
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(ids));
       stopDeckMusic();
       if (window.BattleLobby && typeof window.BattleLobby.onLockInDeck === 'function') {
-        window.BattleLobby.onLockInDeck(ids);
+        window.BattleLobby.onLockInDeck(activeCards());
       }
       return;
     }
     if (window.multiplayerMode) {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(Array.from(selectedIds)));
       stopDeckMusic();
       if (window.Multiplayer && typeof window.Multiplayer.showLobbyEntry === 'function') {
         window.Multiplayer.showLobbyEntry();
@@ -356,8 +417,7 @@
 
   function chooseDifficulty(difficulty) {
     diffBackdropEl.classList.remove('visible');
-    window.aiDifficulty = difficulty;   // read by game.js runAiSelection
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(Array.from(selectedIds)));
+    window.aiDifficulty = difficulty;
     stopDeckMusic();
     showScreen('screen-battle');
     if (typeof initGame === 'function') initGame();
@@ -376,15 +436,29 @@
   /* ── Event wiring ────────────────────────────────────────────── */
 
   popupCloseBtn.addEventListener('click', closePopup);
-
-  // Click outside popup panel to dismiss
   backdropEl.addEventListener('click', function (e) {
     if (e.target === backdropEl) closePopup();
   });
 
-  // Escape key
+  // Rename modal wiring
+  renameSaveBtn.addEventListener('click', commitRename);
+  renameCancelBtn.addEventListener('click', closeRenameModal);
+  renameBackdrop.addEventListener('click', function (e) {
+    if (e.target === renameBackdrop) closeRenameModal();
+  });
+  renameInput.addEventListener('input', function () {
+    renameCounter.textContent = renameInput.value.length;
+  });
+  renameInput.addEventListener('keydown', function (e) {
+    if (e.key === 'Enter')      { e.preventDefault(); commitRename(); }
+    else if (e.key === 'Escape'){ e.preventDefault(); closeRenameModal(); }
+  });
+
+  // Global Escape — close whichever popup is open
   document.addEventListener('keydown', function (e) {
-    if (e.key === 'Escape' && popupCardId !== null) closePopup();
+    if (e.key !== 'Escape') return;
+    if (renameBackdrop.classList.contains('visible')) closeRenameModal();
+    else if (popupCardId !== null) closePopup();
   });
 
   saveBtn.addEventListener('click', openDifficultyModal);
@@ -393,15 +467,8 @@
   // Export so tutorial.js can re-enter the deck builder after tutorial ends
   window.initDeckBuilder = initDeckBuilder;
 
-  document.getElementById('btn-deselect-all').addEventListener('click', function () {
-    selectedIds.forEach(function (id) { setCardSelected(id, false); });
-    selectedIds.clear();
-    updateUI();
-  });
-
   /* ── Home screen buttons ─────────────────────────────────────── */
 
-  // "Versus Mode" — routes to BattleLobby student join if available
   document.getElementById('btn-versus').addEventListener('click', function () {
     if (window.BattleLobby && typeof window.BattleLobby.showStudentJoin === 'function') {
       window.BattleLobby.showStudentJoin();
@@ -413,8 +480,6 @@
     playDeckMusic();
   });
 
-  // "I'm Ready" — first-time: Lucy intro → video → tutorial
-  //               returning:  straight to deck builder
   document.getElementById('btn-ready').addEventListener('click', function () {
     window.multiplayerMode = false;
     if (localStorage.getItem('sog_tutorial_complete')) {
@@ -423,7 +488,6 @@
       playDeckMusic();
       return;
     }
-    // First-time player: Lucy 3-line home intro, then video
     if (typeof window.startHomeIntro === 'function') {
       window.startHomeIntro(function () {
         var video = document.getElementById('intro-video');
@@ -439,7 +503,6 @@
   if (btnAbout) {
     btnAbout.addEventListener('click', function () {
       showScreen('screen-about');
-      // Reset scroll to top on every open
       var aboutMain = document.querySelector('#screen-about .about-main');
       if (aboutMain) aboutMain.scrollTop = 0;
     });
@@ -449,7 +512,6 @@
     btnAboutBack.addEventListener('click', function () { showScreen('screen-home'); });
   }
 
-  // "I'm Ready To Learn" — always replays the full intro → video → tutorial flow
   document.getElementById('btn-learn').addEventListener('click', function () {
     window.multiplayerMode = false;
     localStorage.removeItem('sog_tutorial_complete');
@@ -463,7 +525,6 @@
     }
   });
 
-  // Video ended → matchup screen → battle + tutorial
   document.getElementById('intro-video').addEventListener('ended', function () {
     if (typeof window.showMatchupScreen === 'function') {
       window.showMatchupScreen(function () {
@@ -482,15 +543,6 @@
 
   document.getElementById('coming-soon-backdrop').addEventListener('click', function (e) {
     if (e.target === this) this.classList.remove('visible');
-  });
-
-  // "Watch Intro" button in the deck builder header — plays the intro video
-  document.getElementById('db-watch-intro').addEventListener('click', function () {
-    stopDeckMusic();
-    var video = document.getElementById('intro-video');
-    video.currentTime = 0;
-    video.play().catch(function () {});
-    showScreen('screen-video');
   });
 
   /* ── Returning-visitor skip ──────────────────────────────────── */

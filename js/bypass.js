@@ -14,7 +14,7 @@
   var FORCED_LOCS_KEY = 'sog_forced_locations';
   var TUTORIAL_KEY    = 'sog_tutorial_complete';
   var TEST_MODE_KEY   = 'sog_test_mode';
-  var SAVED_DECK_KEY  = 'sog_saved_deck';
+  // Saved decks now live in window.Decks (multi-slot system).
   var ABANDONED_KEY   = 'sog_abandoned_session';
 
   /* ── Module state ─────────────────────────────────────────────── */
@@ -124,7 +124,7 @@
     if (!confirm('Second confirmation: click OK to wipe all data and reload.')) return;
     localStorage.removeItem(TUTORIAL_KEY);
     localStorage.removeItem(TEST_MODE_KEY);
-    localStorage.removeItem(SAVED_DECK_KEY);
+    if (window.Decks && typeof window.Decks.clearAll === 'function') window.Decks.clearAll();
     localStorage.removeItem(ABANDONED_KEY);
     localStorage.removeItem(FORCED_LOCS_KEY);
     location.reload();

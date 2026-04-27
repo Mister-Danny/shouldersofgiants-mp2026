@@ -586,7 +586,7 @@
       /* Blind 2-player match via match.js */
       var matchId = (_s.slotKey || 's0') + '_' + _s.code;
       var deckIds = [];
-      try { deckIds = JSON.parse(localStorage.getItem('sog_saved_deck') || '[]'); } catch (e) {}
+      try { deckIds = (window.Decks && window.Decks.getActiveCards()) || []; } catch (e) {}
       Match.init(matchId, _s.slotRole, _s.code, _s.studentId, oppId, deckIds, function () {
         if (typeof showScreen === 'function') showScreen('screen-battle');
         if (typeof initGame   === 'function') initGame();

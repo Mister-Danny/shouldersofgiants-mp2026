@@ -16,7 +16,7 @@
   // (List mirrors the keys cleared by bypass.js "Reset All Data" + progression keys.)
   var PROGRESS_KEYS = [
     'sog_tutorial_complete',
-    'sog_saved_deck',
+    'sog_decks',
     'sog_serf_wins',
     'sog_giant_wins',
     'sog_total_wins',

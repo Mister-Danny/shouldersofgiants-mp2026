@@ -1347,8 +1347,7 @@
       var myRole  = (_lobbyId < opponentId) ? 'p1' : 'p2';
       var deckIds = [];
       try {
-        var saved = localStorage.getItem('sog_saved_deck');
-        deckIds = saved ? JSON.parse(saved) : [];
+        deckIds = (window.Decks && window.Decks.getActiveCards()) || [];
       } catch (e) {}
 
       /* Show waiting row — opponent is also expected to click Play */
@@ -1954,8 +1953,7 @@
                     (matchData ? (myRole === 'p1' ? matchData.p2 : matchData.p1) : '') || '';
       var deckIds = [];
       try {
-        var saved = localStorage.getItem('sog_saved_deck');
-        deckIds = saved ? JSON.parse(saved) : [];
+        deckIds = (window.Decks && window.Decks.getActiveCards()) || [];
       } catch (e) {}
 
       function _startBattle() {

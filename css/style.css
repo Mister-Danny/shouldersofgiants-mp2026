@@ -416,14 +416,13 @@ img    { display: block; }
 }
 
 
-/* ── Header bar ─────────────────────────────────────────────────── */
+/* ── Header (two-row: title row + slot-selector row) ──────────── */
 .db-header {
   flex-shrink: 0;
-  height: var(--header-h);
   display: flex;
-  align-items: center;
-  padding: 0 20px;
-  gap: 14px;
+  flex-direction: column;
+  padding: 10px 20px 12px;
+  gap: 10px;
   background: rgba(12, 6, 2, 0.94);
   border-bottom: 2px solid rgba(200, 160, 32, 0.55);
   box-shadow: 0 2px 0 rgba(0,0,0,0.6), 0 3px 12px rgba(0,0,0,0.5);
@@ -431,11 +430,14 @@ img    { display: block; }
   z-index: 10;
 }
 
-.db-header-left {
-  display:     flex;
+/* Top row: Home · Title block · Counter + Play */
+.db-header-row {
+  display: flex;
   align-items: center;
-  gap:         8px;
-  flex-shrink: 0;
+  gap: 14px;
+}
+.db-header-row-top {
+  align-items: flex-start;
 }
 
 .btn-back {
@@ -443,74 +445,111 @@ img    { display: block; }
   padding: 7px 16px;
   font-size: 12px;
   font-family: var(--font);
-  background: rgba(22, 12, 4, 0.85);
-  border: 2px solid rgba(200, 160, 32, 0.55);
+  /* Matches the Let's Play (enabled) button — warm fill + bright bronze border */
+  background: rgba(60, 36, 8, 0.92);
+  border: 2px solid rgba(212, 170, 80, 0.95);
   border-radius: 2px;
-  color: var(--snes-yellow);
+  color: #f4d678;
   letter-spacing: 0.08em;
-  text-shadow: 1px 1px 0 #000;
-  box-shadow: 0 2px 0 rgba(0,0,0,0.6);
+  text-shadow: 1px 1px 0 #000, 0 0 8px rgba(212, 170, 80, 0.30);
+  box-shadow: 0 2px 0 rgba(0,0,0,0.6), 0 0 12px rgba(212, 170, 80, 0.15);
   cursor: pointer;
-  transition: background 0.12s, border-color 0.12s;
+  transition: background 0.12s, border-color 0.12s, color 0.12s, box-shadow 0.12s;
+  margin-top: 4px;     /* aligns with the title baseline since the title block grew */
 }
 .btn-back:hover {
-  background: rgba(40, 22, 6, 0.95);
-  border-color: rgba(200, 160, 32, 0.88);
+  background: rgba(90, 56, 16, 0.98);
+  border-color: #f0cf6c;
+  color: #fff5d8;
+  box-shadow: 0 2px 0 rgba(0,0,0,0.6), 0 0 16px rgba(240, 207, 108, 0.35);
 }
 
-.btn-watch-intro {
-  flex-shrink: 0;
-  padding: 5px 12px;
-  font-family: var(--font);
-  font-size: 10px;
-  color: rgba(200, 160, 80, 0.72);
-  background: transparent;
-  border: 1px solid rgba(200, 160, 32, 0.28);
-  border-radius: 2px;
-  cursor: pointer;
-  letter-spacing: 0.05em;
-  transition: color 0.15s, border-color 0.15s;
-}
-.btn-watch-intro:hover {
-  color: var(--snes-yellow);
-  border-color: rgba(200, 160, 32, 0.65);
+/* Title + subtitle (centered horizontally in the top row) */
+.db-title-block {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: 2px;
 }
 
 .db-title {
-  flex: 1;
+  margin: 0;
   font-family: var(--font);
-  font-size: 18px;
+  font-size: 22px;
   color: var(--snes-yellow);
   text-transform: uppercase;
   letter-spacing: 0.10em;
   text-shadow: 1px 1px 0 #000, 0 0 12px rgba(200, 160, 0, 0.30);
 }
 
-.db-controls {
-  display: flex;
-  align-items: center;
-  gap: 16px;
-  flex-shrink: 0;
+.db-subtitle {
+  font-family: var(--font);
+  font-size: 12px;
+  color: rgba(243, 230, 196, 0.55);
+  letter-spacing: 0.10em;
+  text-transform: uppercase;
+  text-shadow: 1px 1px 0 #000;
+  white-space: nowrap;
 }
 
+/* Right-side controls cluster */
+.db-header-right {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+
+/* "Let's Play" button + its tooltip-style hint stack */
+.db-play-wrap {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+}
+
+/* Hidden by default; visible only when Play button is hovered while disabled */
+.db-save-hint {
+  position: absolute;
+  top: 100%;
+  right: 0;
+  margin-top: 6px;
+  padding: 5px 10px;
+  background: rgba(20, 10, 2, 0.95);
+  border: 1px solid rgba(212, 170, 80, 0.55);
+  border-radius: 2px;
+  font-family: var(--font);
+  font-size: 10px;
+  color: rgba(243, 230, 196, 0.85);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  text-shadow: 1px 1px 0 #000;
+  white-space: nowrap;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.15s;
+  z-index: 5;
+}
+.db-play-wrap:hover .btn-save:disabled ~ .db-save-hint {
+  opacity: 1;
+}
+
+/* Plain-text deck counter — number goes gold only when the deck hits 15 */
 .db-counter {
   font-family: var(--font);
-  font-size: 20px;
-  color: var(--snes-yellow);
-  min-width: 90px;
-  text-align: center;
-  background: rgba(22, 12, 4, 0.86);
-  border: 2px solid rgba(200, 160, 32, 0.55);
-  border-radius: 4px;
-  padding: 4px 14px;
-  text-shadow: 0 0 10px rgba(200, 160, 0, 0.40), 1px 1px 0 #000;
-  transition: color 0.15s, border-color 0.15s;
+  font-size: 16px;
+  color: rgba(243, 230, 196, 0.75);
+  letter-spacing: 0.08em;
+  text-shadow: 1px 1px 0 #000;
+  transition: color 0.15s, text-shadow 0.15s;
 }
 
 .db-counter.complete {
-  color: var(--snes-green);
-  border-color: rgba(72, 216, 72, 0.55);
-  text-shadow: 0 0 10px rgba(72, 216, 72, 0.55), 1px 1px 0 #000;
+  color: #e8c060;
+  text-shadow: 1px 1px 0 #000, 0 0 8px rgba(220, 170, 60, 0.45);
 }
 
 .db-counter.flash {
@@ -518,29 +557,30 @@ img    { display: block; }
 }
 
 @keyframes counter-flash {
-  0%, 100% { color: var(--snes-yellow); }
-  25%, 75%  { color: var(--snes-red);   }
+  0%, 100% { color: rgba(243, 230, 196, 0.75); }
+  25%, 75%  { color: #e85a3a; }
 }
 
-/* Let's Play button */
+/* Let's Play button — primary action, brighter than the Home utility button */
 .btn-save {
   padding: 9px 22px;
   font-size: 13px;
   font-family: var(--font);
-  background: rgba(22, 12, 4, 0.85);
-  border: 2px solid rgba(200, 160, 32, 0.60);
+  background: rgba(60, 36, 8, 0.92);
+  border: 2px solid rgba(212, 170, 80, 0.95);
   border-radius: 2px;
-  color: var(--snes-yellow);
+  color: #f4d678;
   letter-spacing: 0.08em;
-  text-shadow: 1px 1px 0 #000;
-  box-shadow: 0 2px 0 rgba(0,0,0,0.6);
+  text-shadow: 1px 1px 0 #000, 0 0 8px rgba(212, 170, 80, 0.30);
+  box-shadow: 0 2px 0 rgba(0,0,0,0.6), 0 0 12px rgba(212, 170, 80, 0.15);
   cursor: pointer;
-  transition: background 0.12s, border-color 0.12s;
+  transition: background 0.12s, border-color 0.12s, color 0.12s, box-shadow 0.12s;
 }
 .btn-save:not(:disabled):hover {
-  background: rgba(40, 22, 6, 0.95);
-  border-color: rgba(200, 160, 32, 0.90);
-  color: var(--snes-yellow);
+  background: rgba(90, 56, 16, 0.98);
+  border-color: #f0cf6c;
+  color: #fff5d8;
+  box-shadow: 0 2px 0 rgba(0,0,0,0.6), 0 0 16px rgba(240, 207, 108, 0.35);
 }
 .btn-save:disabled {
   background: rgba(12, 6, 2, 0.70);
@@ -569,6 +609,175 @@ img    { display: block; }
   background: rgba(40, 8, 4, 0.95);
   border-color: rgba(210, 80, 55, 0.80);
   color: rgba(240, 140, 100, 1);
+}
+
+
+/* ── Deck slot selector row (bottom of header) ──────────────────── */
+
+.db-slot-row {
+  display: grid;
+  /* Three equal slots; designed to scale to 4+ via auto-fit */
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+  width: 100%;
+}
+
+.db-slot-card {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 10px 14px;
+  /* Light goldish-brown — distinct from the dark wood panel behind it */
+  background: linear-gradient(180deg, #b8945a 0%, #a78648 100%);
+  border: 2px solid #6a4418;
+  border-radius: 3px;
+  cursor: pointer;
+  transition: background 0.12s, border-color 0.12s, box-shadow 0.12s, transform 0.08s;
+  position: relative;
+  overflow: hidden;
+  min-height: 46px;
+  box-sizing: border-box;
+  box-shadow: 0 2px 0 rgba(0, 0, 0, 0.45);
+}
+.db-slot-card:hover {
+  background: linear-gradient(180deg, #c9a368 0%, #b8945a 100%);
+  border-color: #8a5a26;
+}
+
+/* Active slot — brighter gold-tan + bronze ring + soft inner glow */
+.db-slot-card.active {
+  background: linear-gradient(180deg, #e0bd75 0%, #c9a360 100%);
+  border-color: #d4aa50;
+  box-shadow:
+    inset 0 0 14px rgba(255, 235, 180, 0.45),
+    0 0 0 1px rgba(212, 170, 80, 0.55),
+    0 2px 0 rgba(0, 0, 0, 0.45);
+  cursor: default;
+}
+
+.db-slot-name {
+  flex: 1;
+  font-family: var(--font);
+  font-size: 14px;
+  color: #2a1608;                         /* dark-brown text on light tan */
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  text-shadow: 1px 1px 0 rgba(255, 235, 180, 0.35);
+  text-align: left;
+  /* Truncate long custom names cleanly */
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.db-slot-card.active .db-slot-name {
+  color: #1a0c04;                         /* slightly darker for active emphasis */
+  text-shadow: 1px 1px 0 rgba(255, 245, 200, 0.50);
+}
+
+/* Pencil/edit icon — dark brown to read against the gold-tan slot fill */
+.db-slot-edit {
+  flex-shrink: 0;
+  width: 26px;
+  height: 26px;
+  padding: 0;
+  background: transparent;
+  border: 1px solid rgba(42, 22, 8, 0.35);
+  border-radius: 2px;
+  color: rgba(42, 22, 8, 0.65);
+  font-size: 13px;
+  line-height: 1;
+  cursor: pointer;
+  transition: background 0.12s, border-color 0.12s, color 0.12s;
+}
+.db-slot-edit:hover {
+  background: rgba(42, 22, 8, 0.18);
+  border-color: #2a1608;
+  color: #1a0c04;
+}
+
+
+/* ── Rename Deck modal ──────────────────────────────────────────── */
+
+/* Compact width — just enough for the input + buttons */
+.rename-deck-popup {
+  width: 460px;
+  max-width: 92vw;
+}
+
+.rename-deck-body {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-bottom: 4px;
+}
+
+.rename-deck-input {
+  font-family: var(--font);
+  font-size: 22px;
+  color: #f3e6c4;
+  background: rgba(20, 10, 2, 0.85);
+  border: 2px solid rgba(180, 130, 40, 0.55);
+  border-radius: 2px;
+  padding: 10px 14px;
+  letter-spacing: 0.04em;
+  text-shadow: 1px 1px 0 #000;
+  outline: none;
+  transition: border-color 0.12s, background 0.12s;
+}
+.rename-deck-input:focus {
+  border-color: #d4aa50;
+  background: rgba(30, 16, 4, 0.95);
+}
+
+.rename-deck-counter {
+  font-family: var(--font);
+  font-size: 11px;
+  color: rgba(243, 230, 196, 0.45);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  text-align: right;
+  text-shadow: 1px 1px 0 #000;
+}
+
+/* Bronze theme for both buttons in the rename modal */
+#rename-deck-backdrop .popup-actions .btn-snes {
+  background: #3a200c;
+  border-color: #d4aa50;
+  color: #f3e6c4;
+  box-shadow: 0 4px 0 #1a0c04, 0 5px 0 #000;
+}
+#rename-deck-backdrop .popup-actions .btn-snes:hover {
+  background: #4a2a10;
+  border-color: #f0cf6c;
+  color: #fff5d8;
+}
+#rename-deck-backdrop .popup-actions .btn-snes:active {
+  box-shadow: 0 0 0 #1a0c04, 0 1px 0 #000;
+}
+
+/* SAVE button gets a slight emphasis bump — brighter border to mark it as primary */
+#rename-deck-save {
+  border-color: #f0cf6c;
+}
+
+
+/* ── Mobile / narrow viewport — stack the slot row ──────────────── */
+@media (max-width: 700px) {
+  .db-header { padding: 10px 14px; gap: 8px; }
+  .db-header-row-top {
+    flex-wrap: wrap;
+    align-items: center;
+  }
+  .db-title-block { order: -1; flex: 1 0 100%; }
+  .db-title { font-size: 18px; }
+  .db-subtitle { font-size: 11px; }
+  .db-slot-row {
+    /* Single column stack so each slot remains tappable */
+    grid-template-columns: 1fr;
+    gap: 8px;
+  }
+  .db-save-hint { font-size: 9px; }
 }
 
 
@@ -1045,6 +1254,154 @@ img    { display: block; }
   color: #fff5d8;
 }
 .welcome-popup .popup-actions .btn-snes:active {
+  box-shadow: 0 0 0 #1a0c04, 0 1px 0 #000;
+}
+
+
+/* ══════════════════════════════════════════════════════════════════
+   CARD-DETAIL + DIFFICULTY POPUPS — history palette
+   Scoped to #card-popup-backdrop (deck builder), #battle-popup-backdrop
+   (in-game), and #difficulty-backdrop (difficulty mode select).
+   Keeps the SNES font, sizes, and structure — only retints colors
+   to match the parchment/wood + bronze-gold palette used by the
+   welcome modal and About page. Other popups (.card-popup) keep the
+   SNES palette.
+══════════════════════════════════════════════════════════════════ */
+
+/* Sepia-tinted backdrop instead of cool near-black */
+#card-popup-backdrop,
+#battle-popup-backdrop,
+#difficulty-backdrop,
+#rename-deck-backdrop {
+  background: rgba(20, 10, 2, 0.82);
+}
+
+/* Dark-wood panel with bronze double-border (replaces periwinkle SNES rings) */
+#card-popup-backdrop .card-popup,
+#battle-popup-backdrop .card-popup,
+#difficulty-backdrop .card-popup,
+#rename-deck-backdrop .card-popup {
+  background:
+    repeating-linear-gradient(
+      0deg,
+      transparent 0px, transparent 6px,
+      rgba(0, 0, 0, 0.10) 6px, rgba(0, 0, 0, 0.10) 7px
+    ),
+    linear-gradient(180deg,
+      #2a1608 0%,
+      #3a200c 50%,
+      #2a1608 100%
+    );
+  border-color: #d4aa50;
+  box-shadow:
+    0 0 0 3px #1a0c04,                          /* dark gap            */
+    0 0 0 6px #6a4418,                          /* bronze-brown ring   */
+    0 0 0 7px #1a0c04,                          /* outermost dark edge */
+    inset 0 0 28px rgba(60, 30, 0, 0.55);       /* aged inner glow     */
+}
+
+/* Card name header — warm gold (matches About title + welcome popup) */
+#card-popup-backdrop .popup-card-name,
+#battle-popup-backdrop .popup-card-name,
+#difficulty-backdrop .popup-card-name,
+#rename-deck-backdrop .popup-card-name {
+  color: #e8c060;
+  text-shadow:
+    2px 2px 0 #000,
+    0 0 8px rgba(220, 170, 60, 0.30);
+}
+
+/* Bronze divider — no neon glow */
+#card-popup-backdrop .popup-divider,
+#battle-popup-backdrop .popup-divider,
+#difficulty-backdrop .popup-divider,
+#rename-deck-backdrop .popup-divider {
+  background: linear-gradient(
+    to right,
+    transparent 0%,
+    rgba(180, 130, 40, 0.65) 18%,
+    #d4aa50 50%,
+    rgba(180, 130, 40, 0.65) 82%,
+    transparent 100%
+  );
+  box-shadow: none;
+}
+
+/* Difficulty buttons (Serf / Giant) — bronze theme.
+   Background is intentionally a few stops lighter than the panel
+   gradient (#2a1608 → #3a200c) so the buttons read as raised. */
+#difficulty-backdrop .btn-difficulty {
+  background: #5a3418;
+  border-color: #8a5a26;
+  color: #f3e6c4;
+  box-shadow: 0 4px 0 #1a0c04, 0 5px 0 #000;
+}
+#difficulty-backdrop .btn-difficulty:hover {
+  background: #6e4220;
+  border-color: #d4aa50;
+  color: #e8c060;
+}
+#difficulty-backdrop .btn-difficulty:active {
+  box-shadow: 0 0 0 #1a0c04, 0 1px 0 #000;
+}
+#difficulty-backdrop .btn-difficulty .diff-label {
+  color: inherit;                       /* picks up button text colour above */
+}
+#difficulty-backdrop .btn-difficulty .diff-desc {
+  color: rgba(243, 230, 196, 0.55);
+}
+#difficulty-backdrop .btn-difficulty:hover .diff-desc {
+  color: #f0d8a0;
+  opacity: 1;
+}
+
+/* Ability name label — paler gold so it sits below the title hierarchically */
+#card-popup-backdrop .popup-ability-name,
+#battle-popup-backdrop .popup-ability-name {
+  color: #f0d8a0;
+  text-shadow: 1px 1px 0 #000, 0 0 4px rgba(220, 170, 60, 0.20);
+}
+
+/* Ability body text — cream off-white over dark wood */
+#card-popup-backdrop .popup-ability-text,
+#battle-popup-backdrop .popup-ability-text {
+  color: #f3e6c4;
+}
+
+/* Vanilla card (no ability) — dimmed cream */
+#card-popup-backdrop .popup-ability-text.vanilla,
+#battle-popup-backdrop .popup-ability-text.vanilla {
+  color: rgba(243, 230, 196, 0.55);
+}
+
+/* IP breakdown line (battle popup) — gold accent + bronze rule */
+#battle-popup-backdrop .popup-ip-breakdown {
+  color: #e8c060;
+  border-top-color: rgba(212, 170, 80, 0.30);
+}
+
+/* Hint text on the left of popup-actions */
+#card-popup-backdrop .popup-hint,
+#battle-popup-backdrop .popup-hint {
+  color: rgba(243, 230, 196, 0.55);
+}
+
+/* CLOSE button — bronze theme to match the panel */
+#card-popup-backdrop .popup-actions .btn-snes,
+#battle-popup-backdrop .popup-actions .btn-snes {
+  background: #3a200c;
+  border-color: #d4aa50;
+  color: #f3e6c4;
+  box-shadow: 0 4px 0 #1a0c04, 0 5px 0 #000;
+}
+#card-popup-backdrop .popup-actions .btn-snes:hover,
+#battle-popup-backdrop .popup-actions .btn-snes:hover {
+  background: #4a2a10;
+  border-color: #f0cf6c;
+  color: #fff5d8;
+}
+#card-popup-backdrop .popup-actions .btn-snes:active,
+#battle-popup-backdrop .popup-actions .btn-snes:active {
   box-shadow: 0 0 0 #1a0c04, 0 1px 0 #000;
 }
 
