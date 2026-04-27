@@ -274,27 +274,13 @@ img    { display: block; }
   gap: 18px;
 }
 
-/* "I'm Ready" — purple SNES button */
-.btn-home-ready {
-  font-size: 28px;
-  padding: 12px 52px;
-  background: #7a3aab;
-  border: 3px solid #000;
-  color: #fff;
-  box-shadow: 0 4px 0 #3e1a60, 0 5px 0 #000;
-  letter-spacing: 0.06em;
-}
-.btn-home-ready:hover {
-  background: #8e4abf;
-  border-color: #000;
-  color: #fff;
-}
-.btn-home-ready:active {
-  transform: translateY(4px);
-  box-shadow: 0 0 0 #3e1a60, 0 1px 0 #000;
-}
+/* ── Home screen buttons — unified system ─────────────────────────
+   All four buttons share one visual treatment (dark fill, gold border,
+   gold text in CTGalbite). The tutorial button gets a subtle border-
+   glow nudge so the eye lands there first without breaking the system.
+─────────────────────────────────────────────────────────────────── */
 
-/* Shared sizing: force all home buttons to identical width + height */
+/* Shared sizing — identical width + height across all four buttons */
 .btn-home-ready,
 .btn-home-versus,
 .btn-home-learn,
@@ -305,55 +291,100 @@ img    { display: block; }
   text-transform: uppercase;
 }
 
-/* "About the Game" — parchment/bronze theme to match the warm palette */
+/* Shared visual — every button gets the same gold border, gold text,
+   raised SNES edge, and CTGalbite font. Per-button fills override
+   `background` below so each button has its own colour identity. */
+.btn-home-ready,
+.btn-home-versus,
+.btn-home-learn,
 .btn-home-about {
-  font-family: var(--font);
+  font-family: var(--font);          /* CTGalbite — same as page title */
   font-size: 28px;
   padding: 12px 52px;
-  color: #e8c060;
-  background: #2a1608;
-  border: 3px solid #6a4418;
+  color: #f0cf6c;
+  background: #2a1608;               /* fallback / About fill */
+  border: 3px solid #d4aa50;         /* unified gold border across all four */
   border-radius: 2px;
   letter-spacing: 0.06em;
   cursor: pointer;
-  text-shadow: 1px 1px 0 #000;
+  /* 4-direction pixel outline + soft drop — keeps gold text legible
+     on every coloured fill, including the warm amber Learn button. */
+  text-shadow:
+    1px 1px 0 #000,
+   -1px -1px 0 #000,
+    1px -1px 0 #000,
+   -1px 1px 0 #000,
+    0 2px 4px rgba(0, 0, 0, 0.55);
   box-shadow: 0 4px 0 #1a0c04, 0 5px 0 #000;
-  transition: color 0.15s, border-color 0.15s, background 0.15s;
+  transition: background 0.15s, border-color 0.15s, color 0.15s,
+              box-shadow 0.15s, transform 0.06s;
 }
+
+/* Shared hover/tap — same border brighten + warm halo for all four */
+.btn-home-ready:hover,
+.btn-home-versus:hover,
+.btn-home-learn:hover,
 .btn-home-about:hover {
-  background: #3a200c;
-  border-color: #d4aa50;
-  color: #f0cf6c;
+  border-color: #f0cf6c;
+  color: #fff5d8;
+  box-shadow:
+    0 4px 0 #1a0c04,
+    0 5px 0 #000,
+    0 0 14px rgba(240, 207, 108, 0.35);
 }
+
+/* Shared pressed state — flatten the drop shadow */
+.btn-home-ready:active,
+.btn-home-versus:active,
+.btn-home-learn:active,
 .btn-home-about:active {
   transform: translateY(4px);
   box-shadow: 0 0 0 #1a0c04, 0 1px 0 #000;
 }
 
-/* "I'm Ready To Learn" — secondary tutorial button */
+/* ── Per-button colour fills ─────────────────────────────────────
+   Saturated, recognisable at a glance. Each fill is a subtle
+   top-to-bottom gradient (lighter top → darker bottom) for a
+   raised pixel-button feel; gold border + gold text from the
+   shared rules above tie them all together as a family.
+─────────────────────────────────────────────────────────────── */
+
+/* "I'm Ready" — saturated royal purple (core gameplay, energetic) */
+.btn-home-ready {
+  background: linear-gradient(180deg, #7a3aab 0%, #5e2890 100%);
+}
+.btn-home-ready:hover {
+  background: linear-gradient(180deg, #9450c8 0%, #6e34a8 100%);
+}
+
+/* "I'm Ready To Learn" — warm amber/orange-gold + emphasis halo.
+   Same gold border as the others; the small outer glow + warm fill
+   is what marks this as the recommended starting point. */
 .btn-home-learn {
-  font-family: var(--font);
-  font-size: 28px;
-  padding: 12px 52px;
-  color: #a89cbc;
-  background: #2e1a48;
-  border: 3px solid #4a3265;
-  border-radius: 2px;
-  letter-spacing: 0.06em;
-  cursor: pointer;
-  text-shadow: 1px 1px 0 #000;
-  box-shadow: 0 4px 0 #180e28, 0 5px 0 #000;
-  transition: color 0.15s, border-color 0.15s, background 0.15s;
+  background: linear-gradient(180deg, #b86a1c 0%, #8a4f12 100%);
+  box-shadow:
+    0 4px 0 #1a0c04,
+    0 5px 0 #000,
+    0 0 14px rgba(240, 207, 108, 0.40);
 }
 .btn-home-learn:hover {
-  color: #c8bcd8;
-  border-color: #6a4a88;
-  background: #3c2460;
+  background: linear-gradient(180deg, #d68228 0%, #a86018 100%);
+  box-shadow:
+    0 4px 0 #1a0c04,
+    0 5px 0 #000,
+    0 0 22px rgba(240, 207, 108, 0.60);
 }
-.btn-home-learn:active {
-  transform: translateY(4px);
-  box-shadow: 0 0 0 #2a1a40, 0 1px 0 #000;
+
+/* "Multiplayer" — saturated teal (social / outward play) */
+.btn-home-versus {
+  background: linear-gradient(180deg, #1e7a8a 0%, #135060 100%);
 }
+.btn-home-versus:hover {
+  background: linear-gradient(180deg, #2a9aa8 0%, #1c6878 100%);
+}
+
+/* "About the Game" — neutral dark, no tint (quietest button by design).
+   Inherits the shared base fill + shared hover. */
 
 /* ── Video intro screen ────────────────────────────────────────── */
 
@@ -4488,24 +4519,8 @@ body.tut-locked #battle-reset-turn {
    HOME SCREEN — Versus Mode button
    ══════════════════════════════════════════════════════════════════ */
 
-.btn-home-versus {
-  font-size: 28px;
-  padding: 12px 52px;
-  background: #0a2c34;
-  border: 3px solid #1e7a8a;
-  color: #3acce0;
-  box-shadow: 0 4px 0 #052028, 0 5px 0 #000;
-  letter-spacing: 0.06em;
-}
-.btn-home-versus:hover {
-  background: #0f3c4a;
-  border-color: #3acce0;
-  color: #80eeff;
-}
-.btn-home-versus:active {
-  transform: translateY(4px);
-  box-shadow: 0 0 0 #052028, 0 1px 0 #000;
-}
+/* (Versus Mode button styling is handled by the shared
+   .btn-home-* rules near the top of this file.) */
 
 /* ══════════════════════════════════════════════════════════════════
    LOBBY SCREEN — multiplayer tournament entry + waiting room
