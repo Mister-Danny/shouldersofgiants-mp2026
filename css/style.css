@@ -6880,3 +6880,187 @@ body.tut-locked #battle-reset-turn {
   .about-list li { font-size: 16px; }
   .about-header-title { font-size: 14px; }
 }
+
+
+/* ══════════════════════════════════════════════════════════════════
+   MULTIPLAYER (student-join) POPUP — unified with home button system
+   Scoped to #vs-join-backdrop only, so the other .bl-dialog popups
+   (password prompt, teacher lobby, mode select, etc.) keep their
+   existing look.
+══════════════════════════════════════════════════════════════════ */
+
+/* Sepia-tinted backdrop matching the rest of the history-themed UI */
+#vs-join-backdrop {
+  background: rgba(20, 10, 2, 0.82);
+}
+
+/* Single 3px gold border — drops the SNES double-border ring stack */
+#vs-join-backdrop .bl-dialog {
+  background:
+    repeating-linear-gradient(
+      0deg,
+      transparent 0px, transparent 6px,
+      rgba(0, 0, 0, 0.10) 6px, rgba(0, 0, 0, 0.10) 7px
+    ),
+    linear-gradient(180deg,
+      #2a1608 0%,
+      #3a200c 50%,
+      #2a1608 100%
+    );
+  border: 3px solid #d4aa50;
+  border-radius: 2px;
+  box-shadow:
+    0 8px 28px rgba(0, 0, 0, 0.75),
+    inset 0 0 28px rgba(60, 30, 0, 0.55);
+  padding: 32px 36px 28px;
+  max-width: 460px;
+  width: 90%;
+  color: #f3e6c4;
+}
+
+/* Remove the inner hairline frame (the second border) */
+#vs-join-backdrop .bl-dialog::before {
+  content: none;
+}
+
+/* Title — large warm gold, matches home screen treatment */
+#vs-join-backdrop .bl-dialog-title {
+  font-family: 'CTGalbite', monospace;
+  font-size: 32px;
+  color: #e8c060;
+  letter-spacing: 0.06em;
+  margin-bottom: 24px;
+  text-shadow:
+    2px 2px 0 #000,
+   -1px -1px 0 #000,
+    2px -1px 0 #000,
+   -1px 2px 0 #000,
+    0 0 10px rgba(220, 170, 60, 0.30);
+}
+/* Bronze rule beneath title (replaces the dim gold gradient) */
+#vs-join-backdrop .bl-dialog-title::after {
+  background: linear-gradient(
+    to right,
+    transparent 0%,
+    rgba(180, 130, 40, 0.65) 18%,
+    #d4aa50 50%,
+    rgba(180, 130, 40, 0.65) 82%,
+    transparent 100%
+  );
+}
+
+/* Field spacing — give labels and inputs room to breathe */
+#vs-join-backdrop .bl-field {
+  margin-bottom: 18px;
+}
+
+/* Labels — bigger, gold, CTGalbite */
+#vs-join-backdrop .bl-label {
+  font-family: 'CTGalbite', monospace;
+  font-size: 14px;
+  color: #e8c060;
+  letter-spacing: 0.10em;
+  margin-bottom: 8px;
+  text-shadow: 1px 1px 0 #000;
+}
+
+/* Inputs — larger, gold border, cream text, CTGalbite */
+#vs-join-backdrop .bl-input {
+  background: rgba(20, 10, 2, 0.85);
+  border: 2px solid rgba(212, 170, 80, 0.55);
+  border-radius: 2px;
+  color: #f3e6c4;
+  font-family: 'CTGalbite', monospace;
+  font-size: 22px;
+  padding: 12px 14px;
+  letter-spacing: 0.06em;
+  text-shadow: 1px 1px 0 #000;
+}
+#vs-join-backdrop .bl-input:focus {
+  border-color: #d4aa50;
+  background: rgba(30, 16, 4, 0.95);
+}
+#vs-join-backdrop .bl-input-mono {
+  font-size: 26px;
+  letter-spacing: 0.18em;
+}
+/* Placeholder — clearly distinguishable as placeholder, not real input */
+#vs-join-backdrop .bl-input::placeholder {
+  color: rgba(243, 230, 196, 0.30);
+  font-style: italic;
+  letter-spacing: 0.10em;
+}
+
+/* Error text — warm red that still fits the parchment palette */
+#vs-join-backdrop .bl-error {
+  font-family: 'CTGalbite', monospace;
+  color: #e85a3a;
+  font-size: 13px;
+  letter-spacing: 0.06em;
+  min-height: 18px;
+  margin-bottom: 8px;
+}
+
+/* Action row — slightly more breathing room above the buttons */
+#vs-join-backdrop .bl-actions {
+  margin-top: 20px;
+  gap: 12px;
+}
+
+/* ── Buttons match home-screen unified button family ─────────────
+   Both buttons share gold border, CTGalbite font, gold text, and
+   the same raised SNES edge as the home buttons. JOIN LOBBY uses
+   the teal Multiplayer fill; CANCEL stays neutral dark like About. */
+#vs-join-backdrop .btn-snes {
+  font-family: 'CTGalbite', monospace !important;
+  font-size: 18px !important;
+  padding: 10px 28px !important;
+  letter-spacing: 0.06em !important;
+  text-transform: uppercase !important;
+  border: 3px solid #d4aa50 !important;
+  border-radius: 2px !important;
+  color: #f0cf6c !important;
+  text-shadow:
+    1px 1px 0 #000,
+   -1px -1px 0 #000,
+    1px -1px 0 #000,
+   -1px 1px 0 #000 !important;
+  box-shadow: 0 4px 0 #1a0c04, 0 5px 0 #000 !important;
+  cursor: pointer !important;
+  transition: background 0.15s, border-color 0.15s, color 0.15s,
+              box-shadow 0.15s, transform 0.06s !important;
+}
+
+/* JOIN LOBBY (form submit) — saturated teal, mirrors Multiplayer home button */
+#vs-join-backdrop button[type="submit"] {
+  background: linear-gradient(180deg, #1e7a8a 0%, #135060 100%) !important;
+}
+#vs-join-backdrop button[type="submit"]:hover {
+  background: linear-gradient(180deg, #2a9aa8 0%, #1c6878 100%) !important;
+  border-color: #f0cf6c !important;
+  color: #fff5d8 !important;
+  box-shadow:
+    0 4px 0 #1a0c04,
+    0 5px 0 #000,
+    0 0 14px rgba(240, 207, 108, 0.35) !important;
+}
+
+/* CANCEL — neutral dark, mirrors About home button */
+#vs-join-backdrop #vs-join-cancel {
+  background: #2a1608 !important;
+}
+#vs-join-backdrop #vs-join-cancel:hover {
+  background: #3a200c !important;
+  border-color: #f0cf6c !important;
+  color: #fff5d8 !important;
+  box-shadow:
+    0 4px 0 #1a0c04,
+    0 5px 0 #000,
+    0 0 14px rgba(240, 207, 108, 0.35) !important;
+}
+
+/* Shared press state */
+#vs-join-backdrop .btn-snes:active {
+  transform: translateY(4px) !important;
+  box-shadow: 0 0 0 #1a0c04, 0 1px 0 #000 !important;
+}
