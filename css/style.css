@@ -921,6 +921,8 @@ img    { display: block; }
   border: 2px solid transparent;
   /* Pixel-sharp corners */
   border-radius: 0;
+  /* Container query unit source for the CC / IP overlays */
+  container-type: inline-size;
   transition: transform 0.10s ease, border-color 0.12s ease, box-shadow 0.12s ease;
 }
 
@@ -969,44 +971,43 @@ img    { display: block; }
   pointer-events: none;
 }
 
-/* ── CC number — top-left, white @ 75% opacity ──────────────────
-   Large CT Galbite numeral sitting naturally in the corner.
-   Dark shadow ring keeps it readable over any card art.          */
-.db-overlay-cc {
+/* ── CC / IP corner numerals — proportional to card width ────────
+   Sized in container query width units (cqw) so they scale with
+   the card container, not with viewport or fixed pixels. Every
+   card-shaped wrapper that hosts these overlays declares
+   `container-type: inline-size` (see card container rules below).
+   Targets ≈ 22% of card width — same visual weight as the
+   numerals baked into the card art itself.                      */
+.db-overlay-cc,
+.db-overlay-ip {
   position: absolute;
-  top: 8px;
-  left: 10px;
+  top: 3cqw;
   z-index: 4;
   font-family: var(--font);
-  font-size: 52px;
+  font-size: 22cqw;
   line-height: 1;
+  pointer-events: none;
+}
+
+/* CC — top-left, white at 75% opacity, soft dark halo */
+.db-overlay-cc {
+  left: 4cqw;
   color: rgba(255, 255, 255, 0.75);
   text-shadow:
     2px  2px 0 rgba(0,0,0,0.85),
     -1px -1px 0 rgba(0,0,0,0.60),
     3px  3px 4px rgba(0,0,0,0.70);
-  pointer-events: none;
 }
 
-/* ── IP number — top-right, black fill with white outline ────────
-   Solid black glyph with a multi-directional white stroke so it
-   pops against both light and dark card art backgrounds.          */
+/* IP — top-right, black fill with multi-direction white stroke */
 .db-overlay-ip {
-  position: absolute;
-  top: 8px;
-  right: 10px;
-  z-index: 4;
-  font-family: var(--font);
-  font-size: 52px;
-  line-height: 1;
+  right: 4cqw;
   color: #000000;
-  /* 8-direction white stroke — values halved vs original */
   text-shadow:
     -1px -1px 0 #fff,  1px -1px 0 #fff,
     -1px  1px 0 #fff,  1px  1px 0 #fff,
     -2px  0   0 #fff,  2px  0   0 #fff,
      0   -2px 0 #fff,  0    2px 0 #fff;
-  pointer-events: none;
 }
 
 /* ── Double-click flash animations ──────────────────────────────── */
@@ -1771,6 +1772,8 @@ img    { display: block; }
   background: rgba(100, 65, 10, 0.08);
   position: relative;
   overflow: hidden;
+  /* Container query unit source for the CC / IP overlays */
+  container-type: inline-size;
 }
 
 .battle-card-slot.occupied {
@@ -1937,6 +1940,8 @@ img    { display: block; }
   margin-left: -48px;
   z-index: 1;
   transform-origin: bottom center;
+  /* Container query unit source for the CC / IP overlays */
+  container-type: inline-size;
   /* Only border/shadow transition — GSAP owns scale/translate */
   transition: border-color 0.12s ease, box-shadow 0.12s ease;
 }
@@ -1958,15 +1963,8 @@ img    { display: block; }
 }
 
 /* Card name — hidden at rest, fades in on hover */
-/* CC / IP overlays scaled for reduced-size hand cards */
-.battle-hand-card .db-overlay-cc,
-.battle-hand-card .db-overlay-ip {
-  font-size: 26px;
-  top: 4px;
-}
-
-.battle-hand-card .db-overlay-cc { left: 4px;  }
-.battle-hand-card .db-overlay-ip { right: 4px; }
+/* CC / IP overlays now scale automatically via cqw — no override
+   needed for hand cards. */
 
 
 /* ── Deck Pile ─────────────────────────────────────────────────── */
@@ -2165,14 +2163,8 @@ img    { display: block; }
   z-index: 0;   /* stacking context so overlays stay inside slot */
 }
 
-.battle-card-slot.face-up .db-overlay-cc,
-.battle-card-slot.face-up .db-overlay-ip {
-  font-size: 16px;
-  top: 2px;
-}
-
-.battle-card-slot.face-up .db-overlay-cc { left:  3px; }
-.battle-card-slot.face-up .db-overlay-ip { right: 3px; }
+/* CC / IP overlays scale automatically via cqw — no per-context
+   override needed for board slots. */
 
 
 /* ── Animations ────────────────────────────────────────────────── */
@@ -2356,6 +2348,8 @@ img    { display: block; }
   border: 2px solid transparent;
   border-radius: 2px;
   overflow: hidden;
+  /* Container query unit source for the CC / IP overlays */
+  container-type: inline-size;
   transition: transform 0.12s ease, border-color 0.12s ease, box-shadow 0.12s ease;
 }
 
@@ -2371,15 +2365,8 @@ img    { display: block; }
   box-shadow: 0 0 0 1px #000, 0 0 0 3px var(--snes-yellow);
 }
 
-/* Scale CC/IP overlays to match .battle-hand-card size */
-.discard-card-option .db-overlay-cc,
-.discard-card-option .db-overlay-ip {
-  font-size: 36px;
-  top: 5px;
-}
-
-.discard-card-option .db-overlay-cc { left:  6px; }
-.discard-card-option .db-overlay-ip { right: 6px; }
+/* CC / IP overlays scale automatically via cqw — no per-context
+   override needed for the discard chooser cards. */
 
 
 /* ── Score flash when a location score changes ─────────────────── */
@@ -6554,6 +6541,8 @@ body.tut-locked #battle-reset-turn {
   overflow: hidden;
   border: 3px solid gold;
   box-shadow: 0 0 20px rgba(255, 215, 0, 0.4), 0 0 40px rgba(255, 215, 0, 0.15);
+  /* Container query unit source for the CC / IP overlays */
+  container-type: inline-size;
 }
 .unlock-card .db-card-img-wrap {
   position: absolute;
@@ -6578,33 +6567,8 @@ body.tut-locked #battle-reset-turn {
   pointer-events: none;
   z-index: 0;
 }
-.unlock-card .db-overlay-cc,
-.unlock-card .db-overlay-ip {
-  position: absolute;
-  top: 5px;
-  font-size: 47px;
-  font-family: 'CT Galbite', monospace;
-  line-height: 1;
-  z-index: 2;
-  pointer-events: none;
-}
-.unlock-card .db-overlay-cc {
-  left: 10px;
-  color: rgba(255, 255, 255, 0.75);
-  text-shadow:
-    2px  2px 0 rgba(0,0,0,0.85),
-    -1px -1px 0 rgba(0,0,0,0.60),
-    3px  3px 4px rgba(0,0,0,0.70);
-}
-.unlock-card .db-overlay-ip {
-  right: 10px;
-  color: #000;
-  text-shadow:
-    -1px -1px 0 #fff,  1px -1px 0 #fff,
-    -1px  1px 0 #fff,  1px  1px 0 #fff,
-     0   -2px 0 #fff,  0    2px 0 #fff,
-    -2px  0   0 #fff,  2px  0   0 #fff;
-}
+/* CC / IP overlays scale automatically via cqw — base styles cover
+   the unlock-cutscene cards via the shared .db-overlay-cc/ip rules. */
 
 #unlock-title-wrap {
   position: absolute;
