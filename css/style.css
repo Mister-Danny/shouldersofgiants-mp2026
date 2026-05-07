@@ -386,6 +386,184 @@ img    { display: block; }
 /* "About the Game" — neutral dark, no tint (quietest button by design).
    Inherits the shared base fill + shared hover. */
 
+/* ── Home-screen Feedback button ─────────────────────────────────
+   Conditional 5th button. Hidden by inline style="display:none"
+   until js/feedback.js shows it (player has finished 3+ matches).
+   Smaller and quieter than the four primary buttons so it doesn't
+   compete with the main navigation. */
+.btn-home-feedback {
+  display: inline-block;
+  width: 220px;
+  box-sizing: border-box;
+  margin-top: 6px;
+  padding: 7px 24px;
+  font-family: var(--font);
+  font-size: 16px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  text-align: center;
+  color: rgba(232, 192, 96, 0.78);
+  background: #2a1608;
+  border: 2px solid #6a4418;
+  border-radius: 2px;
+  cursor: pointer;
+  text-shadow: 1px 1px 0 #000;
+  box-shadow: 0 3px 0 #1a0c04, 0 4px 0 #000;
+  transition: background 0.15s, border-color 0.15s, color 0.15s,
+              box-shadow 0.15s, transform 0.06s;
+}
+.btn-home-feedback:hover {
+  background: #3a200c;
+  border-color: #d4aa50;
+  color: #f0cf6c;
+  box-shadow: 0 3px 0 #1a0c04, 0 4px 0 #000,
+              0 0 10px rgba(212, 170, 80, 0.20);
+}
+.btn-home-feedback:active {
+  transform: translateY(3px);
+  box-shadow: 0 0 0 #1a0c04, 0 1px 0 #000;
+}
+
+
+/* ══════════════════════════════════════════════════════════════════
+   FEEDBACK POPUP — first-time prompt after the 3rd qualifying match
+   Single gold border (no SNES double-ring), bronze-amber palette,
+   matches the unified visual system.
+══════════════════════════════════════════════════════════════════ */
+
+#feedback-backdrop {
+  background: rgba(20, 10, 2, 0.82);
+}
+
+.feedback-popup {
+  width: 540px;
+  max-width: 92vw;
+  padding: 28px 36px 26px;
+  background: linear-gradient(180deg,
+    #2a1608 0%,
+    #3a200c 50%,
+    #2a1608 100%);
+  border: 3px solid #d4aa50;
+  border-radius: 2px;
+  box-shadow:
+    0 0 0 1px #1a0c04,
+    0 8px 24px rgba(0, 0, 0, 0.65),
+    inset 0 0 28px rgba(60, 30, 0, 0.50);
+}
+
+/* Header — title + italic game-name subhead */
+.feedback-popup .popup-card-name {
+  color: #e8c060;
+  font-family: var(--font);
+  font-size: 24px;
+  text-align: center;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  text-shadow: 2px 2px 0 #000, 0 0 8px rgba(220, 170, 60, 0.30);
+  line-height: 1.25;
+  margin-bottom: 12px;
+}
+.feedback-subhead {
+  font-style: italic;
+  font-size: 26px;
+  color: #f0d8a0;
+  display: inline-block;
+  margin-top: 4px;
+  letter-spacing: 0.05em;
+}
+
+/* Bronze divider, single hairline (no neon glow) */
+.feedback-popup .popup-divider {
+  height: 2px;
+  background: linear-gradient(
+    to right,
+    transparent 0%,
+    rgba(180, 130, 40, 0.65) 18%,
+    #d4aa50 50%,
+    rgba(180, 130, 40, 0.65) 82%,
+    transparent 100%);
+  box-shadow: none;
+  margin-bottom: 18px;
+}
+
+/* Body copy */
+.feedback-body {
+  font-family: var(--font);
+  font-size: 17px;
+  color: #f3e6c4;
+  line-height: 1.55;
+  text-shadow: 1px 1px 0 #000;
+  margin-bottom: 22px;
+  text-align: center;
+}
+.feedback-body p { margin: 0; }
+
+/* Three-button stack, equal width, consistent spacing */
+.feedback-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  align-items: stretch;
+}
+
+/* Shared button base — same family as home buttons (gold border,
+   gold text, raised SNES edge, 4-direction pixel outline). */
+.btn-feedback {
+  width: 100%;
+  padding: 11px 24px;
+  font-family: var(--font);
+  font-size: 18px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  text-align: center;
+  color: #f0cf6c;
+  background: #2a1608;
+  border: 3px solid #d4aa50;
+  border-radius: 2px;
+  cursor: pointer;
+  text-shadow:
+    1px 1px 0 #000,
+    -1px -1px 0 #000,
+    1px -1px 0 #000,
+    -1px 1px 0 #000,
+    0 2px 4px rgba(0, 0, 0, 0.55);
+  box-shadow: 0 3px 0 #1a0c04, 0 4px 0 #000;
+  transition: background 0.15s, border-color 0.15s, color 0.15s,
+              box-shadow 0.15s, transform 0.06s;
+}
+.btn-feedback:hover {
+  border-color: #f0cf6c;
+  color: #fff5d8;
+  box-shadow: 0 3px 0 #1a0c04, 0 4px 0 #000,
+              0 0 12px rgba(240, 207, 108, 0.30);
+}
+.btn-feedback:active {
+  transform: translateY(3px);
+  box-shadow: 0 0 0 #1a0c04, 0 1px 0 #000;
+}
+
+/* Primary "Feedback Form" — warm amber tint + outer halo
+   (mirrors the "I'm Ready To Learn" home-button emphasis). */
+.btn-feedback-primary {
+  background: linear-gradient(180deg, #b86a1c 0%, #8a4f12 100%);
+  font-size: 20px;
+  padding: 13px 24px;
+  box-shadow:
+    0 3px 0 #1a0c04,
+    0 4px 0 #000,
+    0 0 14px rgba(240, 207, 108, 0.35);
+}
+.btn-feedback-primary:hover {
+  background: linear-gradient(180deg, #d68228 0%, #a86018 100%);
+  border-color: #f0cf6c;
+  color: #fff5d8;
+  box-shadow:
+    0 3px 0 #1a0c04,
+    0 4px 0 #000,
+    0 0 22px rgba(240, 207, 108, 0.55);
+}
+
+
 /* ── Video intro screen ────────────────────────────────────────── */
 
 #screen-video.active {

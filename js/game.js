@@ -600,7 +600,10 @@
     if (!sd || sd.revealed) return;
     var card = CARDS.find(function (c) { return c.id === sd.cardId; });
     if (card) G.capital += effectiveCost(card, locId);
-    G.capital = Math.min(G.capital, CAPITAL);
+    // Cap to this turn's starting capital — preserves bonus capital
+    // granted by Scholar-Officials (or any future "+N capital next
+    // turn" ability) instead of clamping back to the base 5.
+    G.capital = Math.min(G.capital, G.turnStartCapital);
     G.playerRevealQueue = G.playerRevealQueue.filter(function (id) { return id !== sd.cardId; });
     G.playerHand.push(sd.cardId);
     G.playerSlots[locId][slotIndex] = null;
@@ -3375,6 +3378,13 @@
         if      (result.outcome === 'player') Anim.celebration();
         else if (result.outcome === 'ai')     Anim.sadResult();
       }
+      // Vs AI / Multiplayer match completion — feeds the feedback
+      // counter + home-button visibility. Tutorial uses its own
+      // showScreen('screen-result') in tutorial.js, so it doesn't
+      // reach this code path.
+      if (window.Feedback && typeof window.Feedback.recordMatchCompleted === 'function') {
+        window.Feedback.recordMatchCompleted();
+      }
     };
 
     /* Tournament champion: Final knockout win always triggers the legend screen */
@@ -3696,6 +3706,10 @@
   }
 
   document.getElementById('result-play-again').addEventListener('click', function () {
+    // First-time feedback popup intercept (3rd-match milestone).
+    // Returns true if popup is now visible — abort the navigation
+    // and let the popup's own "Play Again" button re-fire this click.
+    if (window.Feedback && window.Feedback.maybeShowPopup()) return;
     _playPendingCelebrations(function () {
       showScreen('screen-battle');
       initGame();
@@ -3703,6 +3717,7 @@
   });
 
   document.getElementById('result-home').addEventListener('click', function () {
+    if (window.Feedback && window.Feedback.maybeShowPopup()) return;
     stopBgMusic();
     _playPendingCelebrations(function () {
       showScreen('screen-home');

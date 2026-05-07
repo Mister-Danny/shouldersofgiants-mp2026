@@ -37,6 +37,7 @@
         <button class="btn-home-learn"           id="btn-learn">I'm Ready To Learn</button>
         <button class="btn-snes btn-home-versus" id="btn-versus">&#9876; Multiplayer</button>
         <button class="btn-home-about"           id="btn-about">About the Game</button>
+        <button class="btn-home-feedback"        id="btn-home-feedback" style="display:none">Feedback</button>
       </nav>
     </div>
 
@@ -372,6 +373,27 @@
       </div>
 
     </div>
+
+    <!-- ── First-time feedback popup ─────────────────────────────
+         Shown after the player's 3rd qualifying match, when they
+         click Home or Play Again from the scoreboard. Driven by
+         js/feedback.js — see sog_completed_matches and
+         sog_feedback_prompt_seen localStorage keys.                -->
+    <div id="feedback-backdrop" class="popup-backdrop">
+      <div class="card-popup feedback-popup">
+        <div class="popup-card-name">Thank You for Playing<br><span class="feedback-subhead">Shoulders of Giants!</span></div>
+        <div class="popup-divider"></div>
+        <div class="feedback-body">
+          <p>This game is in active development and we'd love to hear from you. If you have 2 minutes, please consider filling out this feedback form so we can continue to make the game better.</p>
+        </div>
+        <div class="feedback-actions">
+          <button class="btn-feedback btn-feedback-primary" id="feedback-form-btn">Feedback Form</button>
+          <button class="btn-feedback" id="feedback-home-btn">Home Screen</button>
+          <button class="btn-feedback" id="feedback-playagain-btn">Play Again</button>
+        </div>
+      </div>
+    </div>
+
   </div>
 
   <!-- ═══════════════════════════════════════════════════════════════
@@ -1115,6 +1137,29 @@
           </div>
         </section>
 
+        <!-- ── FEEDBACK CONTROLS ─────────────────────────────── -->
+        <section class="bypass-section">
+          <h3 class="bypass-section-title">Feedback Controls</h3>
+          <p class="bypass-section-hint">
+            Match counter: <strong id="bypass-feedback-count">0</strong>
+            &nbsp;&middot;&nbsp;
+            Popup seen: <strong id="bypass-feedback-seen">no</strong>
+            <br>Popup triggers when counter hits 3 and seen flag is unset.
+          </p>
+          <div class="bypass-btn-row">
+            <button class="btn-snes bypass-btn-action" id="bypass-set-match-count">Set Match Counter</button>
+            <span class="bypass-btn-desc">Prompts for a number; sets sog_completed_matches</span>
+          </div>
+          <div class="bypass-btn-row">
+            <button class="btn-snes bypass-btn-action" id="bypass-trigger-feedback">Arm Feedback Popup</button>
+            <span class="bypass-btn-desc">Sets counter to 3 and clears seen flag &mdash; popup will appear next time you exit a match</span>
+          </div>
+          <div class="bypass-btn-row">
+            <button class="btn-snes btn-snes-close bypass-btn-action" id="bypass-reset-feedback">Reset Feedback</button>
+            <span class="bypass-btn-desc">Clears match counter and popup-seen flag (hides home Feedback button too)</span>
+          </div>
+        </section>
+
         <!-- ── CLASSROOM CONTROLS ────────────────────────────── -->
         <section class="bypass-section">
           <h3 class="bypass-section-title">Classroom Controls — Force Locations</h3>
@@ -1216,6 +1261,7 @@
   <script src="js/game.js"></script>
   <script src="js/bypass.js"></script>
   <script src="js/welcome.js"></script>
+  <script src="js/feedback.js"></script>
 
 </body>
 </html>

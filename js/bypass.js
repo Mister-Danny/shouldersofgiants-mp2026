@@ -70,7 +70,21 @@
     el.style.display = 'flex';
     refreshTestModeBtn();
     refreshForcedLocations();
+    refreshFeedbackBypassState();
     loadStats();
+  }
+
+  function refreshFeedbackBypassState() {
+    var countEl = document.getElementById('bypass-feedback-count');
+    var seenEl  = document.getElementById('bypass-feedback-seen');
+    if (countEl) {
+      var n = window.Feedback ? window.Feedback.getCount() : 0;
+      countEl.textContent = String(n);
+    }
+    if (seenEl) {
+      var seen = window.Feedback ? window.Feedback.isSeen() : false;
+      seenEl.textContent = seen ? 'yes' : 'no';
+    }
   }
 
   function close() {
@@ -575,6 +589,42 @@
       window._pendingUnlock = null;
       window._pendingMontage = null;
       showBypassToast('All progression reset — reload to see changes in deck builder');
+    });
+
+    /* Feedback Controls */
+    var setMatchBtn = document.getElementById('bypass-set-match-count');
+    if (setMatchBtn) setMatchBtn.addEventListener('click', function () {
+      var current = window.Feedback ? window.Feedback.getCount() : 0;
+      var raw = prompt('Set match counter (current: ' + current + ').\n\n' +
+                       'Popup triggers at 3 or higher.\n' +
+                       'Setting to a value < 3 also clears the popup-seen flag.',
+                       String(current));
+      if (raw === null) return;
+      var n = parseInt(raw, 10);
+      if (isNaN(n) || n < 0) { showBypassToast('Invalid number'); return; }
+      localStorage.setItem('sog_completed_matches', String(n));
+      if (n < 3) localStorage.removeItem('sog_feedback_prompt_seen');
+      if (window.Feedback) window.Feedback.refreshHomeButton();
+      refreshFeedbackBypassState();
+      showBypassToast('Match counter set to ' + n);
+    });
+
+    var armFbBtn = document.getElementById('bypass-trigger-feedback');
+    if (armFbBtn) armFbBtn.addEventListener('click', function () {
+      localStorage.setItem('sog_completed_matches', '3');
+      localStorage.removeItem('sog_feedback_prompt_seen');
+      if (window.Feedback) window.Feedback.refreshHomeButton();
+      refreshFeedbackBypassState();
+      showBypassToast('Popup armed — exit a match to see it');
+    });
+
+    var resetFbBtn = document.getElementById('bypass-reset-feedback');
+    if (resetFbBtn) resetFbBtn.addEventListener('click', function () {
+      localStorage.removeItem('sog_completed_matches');
+      localStorage.removeItem('sog_feedback_prompt_seen');
+      if (window.Feedback) window.Feedback.refreshHomeButton();
+      refreshFeedbackBypassState();
+      showBypassToast('Feedback counter + seen flag cleared');
     });
 
     /* Location checkboxes */
