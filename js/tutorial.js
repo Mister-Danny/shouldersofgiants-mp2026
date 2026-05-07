@@ -571,6 +571,45 @@
     boardEl      = document.getElementById('battle-board');
     endTurnBtnEl = document.getElementById('battle-end-turn');
 
+    // Delegated click-to-reveal-ability for board cards during the
+    // tutorial. Mirrors the live game's board click for both player
+    // AND opponent cards — covers every code path that builds a
+    // face-up slot (reveal, move, push, animation rebuild) without
+    // having to wire onclick at every site. Starter cards (T1/T2
+    // placements) show "No special ability — For now" instead of
+    // their real ability text, since abilities aren't introduced
+    // until turn 3.
+    if (boardEl && !boardEl._tutBoardClickWired) {
+      boardEl._tutBoardClickWired = true;
+      boardEl.addEventListener('click', function (ev) {
+        if (!window.tutorialActive) return;
+        var slotEl = ev.target.closest('.battle-card-slot.face-up.occupied');
+        if (!slotEl) return;
+        if (typeof window.openBattlePopup !== 'function') return;
+        var ownerStr = slotEl.dataset.owner;
+        var locId    = parseInt(slotEl.dataset.locId,     10);
+        var si       = parseInt(slotEl.dataset.slotIndex, 10);
+        if (!ownerStr || isNaN(locId) || isNaN(si)) return;
+        var slotsRef = ownerStr === 'player' ? TS.playerSlots : TS.aiSlots;
+        var sd       = slotsRef[locId] && slotsRef[locId][si];
+        if (!sd || !sd.revealed) return;
+        var realCard = CARDS.find(function (c) { return c.id === sd.cardId; });
+        if (!realCard) return;
+        var isStarter = !!sd._starter;
+        var displayCard = isStarter
+          ? { name: realCard.name, cc: realCard.cc, ip: realCard.ip,
+              type: realCard.type, ability: null, abilityName: null }
+          : realCard;
+        window.openBattlePopup(displayCard, sd, ownerStr, true);
+        if (isStarter) {
+          // openBattlePopup writes "No special ability." for null-ability
+          // cards; override to the tutorial-specific text with em dash.
+          var txEl = document.getElementById('battle-popup-ability-text');
+          if (txEl) txEl.textContent = 'No special ability — For now';
+        }
+      });
+    }
+
     // Lucy comic bubble (battle tutorial)
     lucyBubbleEl     = document.getElementById('tut-lucy-bubble');
     lucyBubbleTextEl = document.getElementById('tut-lucy-text');
@@ -886,17 +925,28 @@
     setHeader(2, 'REVEAL', TS.capital);
     placeAICards(2);
     runReveal(2, function () {
-      var pw = 0, ow = 0;
-      T_LOCS.forEach(function (loc) {
-        var ps = scoreAt('player', loc.id), as = scoreAt('opp', loc.id);
-        if (ps > as) pw++; else if (as > ps) ow++;
-      });
-      if (pw === ow) {
+      var bl = boardLeader();
+      if (bl.outcome === 'draw') {
         showOtziLine("A tie? How exciting\u2026", function () {
           showEl(lucyBubbleEl);
           startTurn(3);
         });
-      } else if (pw > ow) {
+      } else if (bl.outcome === 'player' && bl.tiebreaker) {
+        // Locations even but player ahead on total IP
+        showOtziLine("Locations look even\u2026 but those numbers worry me.", function () {
+          showEl(lucyBubbleEl);
+          queueDialogues([
+            "When location wins are split, total influence across all three breaks the tie \u2014 and you\u2019re ahead."
+          ], function () { startTurn(3); });
+        });
+      } else if (bl.outcome === 'otzi' && bl.tiebreaker) {
+        showOtziLine("Locations are even, but the numbers are mine.", function () {
+          showEl(lucyBubbleEl);
+          queueDialogues([
+            "Even when locations look split, total influence breaks the tie \u2014 Otzi\u2019s edging it. Watch the totals."
+          ], function () { startTurn(3); });
+        });
+      } else if (bl.outcome === 'player') {
         showOtziLine("History has a long arc.", function () {
           showEl(lucyBubbleEl);
           queueDialogues(["And it bends to me."], function () { startTurn(3); });
@@ -970,17 +1020,27 @@
     setHeader(3, 'REVEAL', TS.capital);
     placeAICards(3);
     runReveal(3, function () {
-      var pw = 0, ow = 0;
-      T_LOCS.forEach(function (loc) {
-        var ps = scoreAt('player', loc.id), as = scoreAt('opp', loc.id);
-        if (ps > as) pw++; else if (as > ps) ow++;
-      });
-      if (pw === ow) {
+      var bl = boardLeader();
+      if (bl.outcome === 'draw') {
         showOtziLine("A tie? How exciting\u2026", function () {
           showEl(lucyBubbleEl);
           startTurn(4);
         });
-      } else if (pw > ow) {
+      } else if (bl.outcome === 'player' && bl.tiebreaker) {
+        showOtziLine("Locations are split, but those totals\u2026", function () {
+          showEl(lucyBubbleEl);
+          queueDialogues([
+            "Total influence is the tiebreaker when location wins are even. You\u2019re still in the lead."
+          ], function () { startTurn(4); });
+        });
+      } else if (bl.outcome === 'otzi' && bl.tiebreaker) {
+        showOtziLine("It looks even \u2014 but the totals say otherwise.", function () {
+          showEl(lucyBubbleEl);
+          queueDialogues([
+            "Otzi\u2019s leading on total influence. Push harder at the locations you can flip."
+          ], function () { startTurn(4); });
+        });
+      } else if (bl.outcome === 'player') {
         showOtziLine("Grrr\u2026", function () {
           showEl(lucyBubbleEl);
           queueDialogues(["Australopithecus got your tongue?"], function () { startTurn(4); });
@@ -1058,17 +1118,27 @@
     setHeader(4, 'REVEAL', TS.capital);
     placeAICards(4);
     runReveal(4, function () {
-      var pw = 0, ow = 0;
-      T_LOCS.forEach(function (loc) {
-        var ps = scoreAt('player', loc.id), as = scoreAt('opp', loc.id);
-        if (ps > as) pw++; else if (as > ps) ow++;
-      });
-      if (pw === ow) {
+      var bl = boardLeader();
+      if (bl.outcome === 'draw') {
         showOtziLine("A tie? How exciting\u2026", function () {
           showEl(lucyBubbleEl);
           startTurn(5);
         });
-      } else if (pw > ow) {
+      } else if (bl.outcome === 'player' && bl.tiebreaker) {
+        showOtziLine("Locations are even, but the totals are slipping away from me.", function () {
+          showEl(lucyBubbleEl);
+          queueDialogues([
+            "Total influence is breaking the tie in your favor. One more turn \u2014 keep it up."
+          ], function () { startTurn(5); });
+        });
+      } else if (bl.outcome === 'otzi' && bl.tiebreaker) {
+        showOtziLine("Looks tied \u2014 but the totals belong to Otzi.", function () {
+          showEl(lucyBubbleEl);
+          queueDialogues([
+            "Otzi\u2019s edging the totals. One turn left to flip a location or push your numbers higher."
+          ], function () { startTurn(5); });
+        });
+      } else if (bl.outcome === 'player') {
         showOtziLine("I don\u2019t like where this is headed.", function () {
           showEl(lucyBubbleEl);
           startTurn(5);
@@ -1107,22 +1177,63 @@
 
   /* ── Post-game flow ──────────────────────────────────────────── */
 
-  function determineWinner() {
-    var pw = 0, ow = 0;
+  /**
+   * Computes the current board leader, mirroring the live game's
+   * resolution: location wins decide the match unless they're tied,
+   * in which case total influence across all three locations breaks
+   * the tie.
+   *
+   * Returns { outcome, tiebreaker, pT, oT, pw, ow } where outcome is
+   * 'player' | 'otzi' | 'draw' and tiebreaker is true only when the
+   * outcome was decided by total IP rather than location count.
+   */
+  function boardLeader() {
+    var pw = 0, ow = 0, pT = 0, oT = 0;
     T_LOCS.forEach(function (loc) {
       var ps = scoreAt('player', loc.id), as = scoreAt('opp', loc.id);
       if (ps > as) pw++; else if (as > ps) ow++;
+      pT += ps; oT += as;
     });
-    return pw > ow ? 'player' : (ow > pw ? 'otzi' : 'draw');
+    var outcome, tiebreaker = false;
+    if      (pw > ow) outcome = 'player';
+    else if (ow > pw) outcome = 'otzi';
+    else {
+      tiebreaker = true;
+      outcome = pT > oT ? 'player' : (oT > pT ? 'otzi' : 'draw');
+      if (outcome === 'draw') tiebreaker = false;   // truly even
+    }
+    return { outcome: outcome, tiebreaker: tiebreaker, pT: pT, oT: oT, pw: pw, ow: ow };
   }
 
+  function determineWinner() { return boardLeader().outcome; }
+
   function showPostGameDialogue(won) {
+    var bl = boardLeader();
     if (won === 'draw') {
+      // Truly even \u2014 tied on locations AND on total IP
       showOtziLine("A tie? How exciting\u2026", function () {
         showEl(lucyBubbleEl);
         queueDialogues(["As always, history has been written by the victors."], function () {
           showTutorialResults(won);
         });
+      });
+    } else if (won === 'player' && bl.tiebreaker) {
+      // Locations split 1-1 with one tied; total IP decided in player's favor
+      showOtziLine("Hmph. Locations are even, but the numbers\u2026", function () {
+        showEl(lucyBubbleEl);
+        queueDialogues([
+          "Locations were split, but total influence across all three breaks the tie. You came out ahead.",
+          "History was written by the one who counted further."
+        ], function () { showTutorialResults(won); });
+      });
+    } else if (won === 'otzi' && bl.tiebreaker) {
+      // Locations split 1-1 with one tied; total IP decided in Otzi's favor
+      showOtziLine("Even when it looks even, the totals favor me.", function () {
+        showEl(lucyBubbleEl);
+        queueDialogues([
+          "When location wins are split, total influence breaks the tie \u2014 and this one went Otzi\u2019s way.",
+          "You\u2019re not done. Adapt and try again."
+        ], function () { showTutorialResults(won); });
       });
     } else if (won === 'player') {
       showOtziLine("No! Not again.", function () {
@@ -1316,7 +1427,13 @@
       var slots = TS.aiSlots[item.l]; if (!slots) return;
       var si = slots.indexOf(null); if (si === -1) return;
       var card = CARDS.find(function (c) { return c.id === item.c; }); if (!card) return;
-      slots[si] = { cardId: item.c, ip: card.ip, revealed: false, contMod: 0 };
+      slots[si] = {
+        cardId: item.c, ip: card.ip, revealed: false, contMod: 0,
+        // Starter cards (T1/T2 placements) are pre-ability — they
+        // always show "No special ability — For now" when clicked
+        // on the board, regardless of the card's real ability.
+        _starter: turn <= 2
+      };
       var slotEl = getTutSlotEl('opp', item.l, si);
       if (slotEl) slotEl.className = 'battle-card-slot occupied face-down';
     });
@@ -1374,7 +1491,12 @@
     var cost = tEffectiveCost(card, locId);
     if (si === -1 || cost > TS.capital) return false;
 
-    slots[si] = { cardId: cardId, ip: card.ip, revealed: false, contMod: 0 };
+    slots[si] = {
+      cardId: cardId, ip: card.ip, revealed: false, contMod: 0,
+      // Starter cards (T1/T2 placements) are pre-ability — they
+      // always show "No special ability — For now" when clicked.
+      _starter: TS.turn <= 2
+    };
     TS.capital -= cost;
     TS.playerHand = TS.playerHand.filter(function (id) { return id !== cardId; });
     TS.cardsPlayedThisTurn++;
